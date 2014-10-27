@@ -26,7 +26,7 @@ public class ParkFinder implements EntryPoint {
 		mainPanel.add(startParseButton);
 		errorMessage.setText("No errors so far");
 		
-		RootPanel.get("Parser").add(mainPanel);
+		RootPanel.get("parser").add(mainPanel);
 		
 		startParseButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
