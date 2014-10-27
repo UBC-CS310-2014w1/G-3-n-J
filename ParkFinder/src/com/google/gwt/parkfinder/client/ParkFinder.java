@@ -4,6 +4,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -24,6 +25,8 @@ public class ParkFinder implements EntryPoint {
 		mainPanel.add(errorMessage);
 		mainPanel.add(startParseButton);
 		errorMessage.setText("No errors so far");
+		
+		RootPanel.get("Parser").add(mainPanel);
 		
 		startParseButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
