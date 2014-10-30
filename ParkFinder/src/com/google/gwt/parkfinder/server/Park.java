@@ -1,20 +1,19 @@
 package com.google.gwt.parkfinder.server;
 
 import java.util.LinkedList;
-
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
-
-import com.google.gwt.parkfinder.client.Facility;
-import com.google.gwt.parkfinder.client.Washroom;
+import com.google.appengine.api.users.User;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class Park {
 	
-	 @PrimaryKey
+	 @PrimaryKey 
+	 @Persistent
+	 private User User;
+	 @Persistent
 	 private String Name;
 	 @Persistent
 	 private String StreetNumber;
@@ -31,26 +30,36 @@ public class Park {
 	 @Persistent
 	 private LinkedList <Washroom> Washroom;
 	 
-	 public Park() {
-			// TODO Auto-generated constructor stub
+	 // Used when adding to favorite
+	 public Park(User user, String name) {
+		 this.User = user;
+		 this.Name = name;
 		}
 	 
-	 public Park(String Name, String StreetNumber, String StreetName,
-			 String GoogleMapDest, String NeighbourhoodName, String NeighbourhoodURL, 
-			 LinkedList <Facility> Facility, LinkedList <Washroom> Washroom){
-		 this();
-		 this.Name = Name;
-		 this.StreetNumber = StreetNumber;
-		 this.StreetName = StreetName;
-		 this.GoogleMapDest = GoogleMapDest;
-		 this.NeighbourhoodName = NeighbourhoodName;
-		 this.NeighbourhoodURL = NeighbourhoodURL;
-		 this.Facility = Facility;
-		 this.Washroom = Washroom;
+	 // Used when storing to database
+	 public Park(String name, String streetNumber, String streetName,
+			 String googleMapDest, String neighbourhoodName, String neighbourhoodURL, 
+			 LinkedList <Facility> facility, LinkedList <Washroom> washroom){
+		 this.Name = name;
+		 this.StreetNumber = streetNumber;
+		 this.StreetName = streetName;
+		 this.GoogleMapDest = googleMapDest;
+		 this.NeighbourhoodName = neighbourhoodName;
+		 this.NeighbourhoodURL = neighbourhoodURL;
+		 this.Facility = facility;
+		 this.Washroom = washroom;
 	 }
 
-	 // Auto-generated getters and setters
+	// Auto-generated getters and setters
 	 
+	public User getUser() {
+		return User;
+	}
+
+	public void setUser(User user) {
+		User = user;
+	}
+
 	public String getName() {
 		return Name;
 	}
