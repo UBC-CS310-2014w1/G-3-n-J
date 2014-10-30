@@ -1,5 +1,7 @@
 package com.google.gwt.parkfinder.client;
 
+import java.util.ArrayList;
+
 import com.google.gwt.parkfinder.shared.FieldVerifier;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -21,6 +23,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class ParkFinder implements EntryPoint {
+	private ArrayList<String> parks = new ArrayList<String>();
 
 	
 	
