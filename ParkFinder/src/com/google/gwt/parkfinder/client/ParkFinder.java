@@ -31,6 +31,7 @@ import com.google.gwt.dom.client.Style.Unit;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class ParkFinder implements EntryPoint {
+
 	
 	HorizontalPanel mainPanel = new HorizontalPanel();
 	HorizontalPanel mapPanel = new HorizontalPanel();
@@ -54,17 +55,16 @@ public class ParkFinder implements EntryPoint {
 		});
 		
 		mainPanel.add(new Button("Main Panel Marker"));
-		RootPanel.get("map").add(mapPanel);
-		RootPanel.get("content").add(mainPanel);
+		RootPanel.get("mapPanel").add(mapPanel);
+		RootPanel.get("filter").add(mainPanel);
 		
 		
 	}
 
 	private void buildMapUi() {
-		// Controls center of map. Set to Ravine Park, at the moment.
 		LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
 		
-		final MapWidget map = new MapWidget(mapCenter, 2);
+		MapWidget map = new MapWidget(mapCenter, 2);
 		
 		map.setSize("100%", "100%");
 		map.setZoomLevel(12);
@@ -83,7 +83,7 @@ public class ParkFinder implements EntryPoint {
 		dock.addNorth(map, 500);
 
 		// Add the map to the HTML host page
-		RootPanel.get("map").add(dock);
+		RootPanel.get("mapPanel").add(dock);
 
 
 	}
