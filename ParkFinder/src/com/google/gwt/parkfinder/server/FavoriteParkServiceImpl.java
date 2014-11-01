@@ -1,6 +1,5 @@
 package com.google.gwt.parkfinder.server;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -92,6 +91,5 @@ public class FavoriteParkServiceImpl extends RemoteServiceServlet implements
 	private PersistenceManager getPersistenceManager() {
 		return PMF.getPersistenceManager();
 	}
-
 
 }

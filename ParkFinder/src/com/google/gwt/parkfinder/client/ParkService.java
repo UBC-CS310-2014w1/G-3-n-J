@@ -9,6 +9,10 @@ import com.google.gwt.parkfinder.server.Park;
 
 @RemoteServiceRelativePath("Park")
 public interface ParkService extends RemoteService {
+	// Load entire park list
 	public List<Park> getParkList() throws IOException, NotLoggedInException;
+
+	// Return a single park by inputing the ParkID
+	// Used for query
 	public Park getParkInfo(String id) throws NotLoggedInException;
 }
