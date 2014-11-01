@@ -15,4 +15,8 @@ public interface ParkService extends RemoteService {
 	// Return a single park by inputing the ParkID
 	// Used for query
 	public Park getParkInfo(String id) throws NotLoggedInException;
+	
+	// Return a list of parks by inputing the Name
+	// Used for query
+	public List<Park> searchName(String name) throws NotLoggedInException;
 }

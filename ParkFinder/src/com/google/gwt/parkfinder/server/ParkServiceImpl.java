@@ -35,7 +35,7 @@ public class ParkServiceImpl extends RemoteServiceServlet implements
 	public List<Park> parkList = new ArrayList<Park>();
 
 	@Override
-	public List<Park> getParkList() throws IOException {
+	public List<Park> getParkList() throws IOException, NotLoggedInException {
 		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
 
@@ -77,6 +77,19 @@ public class ParkServiceImpl extends RemoteServiceServlet implements
 				return park;
 		}
 		return null;
+	}
+
+	@Override
+	public List<Park> searchName(String name) throws NotLoggedInException {
+		if (parkList.isEmpty())
+			return null;
+		List<Park> nameMatched = new ArrayList<Park>();
+		for (int index = 0; index <= parkList.size(); index++) {
+			Park park = parkList.get(index);
+			if (park.getName().contains(name))
+				nameMatched.add(park);
+		}
+		return nameMatched;
 	}
 
 	private void checkLoggedIn() throws NotLoggedInException {
