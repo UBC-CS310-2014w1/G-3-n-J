@@ -105,7 +105,22 @@ public class ParkFinder implements EntryPoint {
 	}
 	
 	private void initPanels() {
-		searchTabPanel.add(new Button("Search content here"));
+		Button searchButton = new Button("Potential park page display", new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				// TODO Auto-generated method stub
+				DialogBox message = new DialogBox();
+				message.add(new Button("Park info content"));
+				message.setText("Park Name");
+				message.setAutoHideEnabled(true);
+				message.center();
+				message.show();
+			}
+			
+		});
+		searchTabPanel.add(searchButton);
+		
 		favouritesTabPanel.add(new Button("Favourites content here"));
 	}
 }
