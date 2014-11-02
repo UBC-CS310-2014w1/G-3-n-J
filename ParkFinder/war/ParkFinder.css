@@ -6,11 +6,10 @@ h1 {
   font-size: 2em;
   font-weight: bold;
   color: #777777;
-  margin: 40px 0px 70px;
   text-align: center;
 }
 
-#filter {
+#searchContainer {
 	width: 25%;
 	height: 100%;
 	float: right;
@@ -21,6 +20,7 @@ h1 {
 	height: 100%;
 	float: left;
 }
+
 
 /** Most GWT widgets already have a style name defined */
 .gwt-DialogBox {

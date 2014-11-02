@@ -14,15 +14,17 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.TabPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.dom.client.Style.Unit;
 
 
@@ -32,9 +34,11 @@ import com.google.gwt.dom.client.Style.Unit;
  */
 public class ParkFinder implements EntryPoint {
 
-	
-	HorizontalPanel mainPanel = new HorizontalPanel();
+
 	HorizontalPanel mapPanel = new HorizontalPanel();
+	TabPanel tabPanel = new TabPanel();
+	VerticalPanel favouritesTabPanel = new VerticalPanel();
+	VerticalPanel searchTabPanel = new VerticalPanel();
 
 
 	/**
@@ -54,12 +58,17 @@ public class ParkFinder implements EntryPoint {
 			}
 		});
 		
-		mainPanel.add(new Button("Main Panel Marker"));
+		
+		
+		initPanels();
+		initTabs();
+		
 		RootPanel.get("mapPanel").add(mapPanel);
-		RootPanel.get("filter").add(mainPanel);
+		RootPanel.get("searchContainer").add(tabPanel);
 		
 		
 	}
+	
 
 	private void buildMapUi() {
 		LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
@@ -84,7 +93,19 @@ public class ParkFinder implements EntryPoint {
 
 		// Add the map to the HTML host page
 		RootPanel.get("mapPanel").add(dock);
-
-
+	}
+	
+	
+	private void initTabs() {
+		tabPanel.setWidth("100%");
+		tabPanel.add(searchTabPanel, "Search");
+		tabPanel.add(favouritesTabPanel, "Favourites");
+		tabPanel.selectTab(0);
+		
+	}
+	
+	private void initPanels() {
+		searchTabPanel.add(new Button("Search content here"));
+		favouritesTabPanel.add(new Button("Favourites content here"));
 	}
 }
