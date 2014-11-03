@@ -30,15 +30,17 @@ import com.google.gwt.dom.client.Style.Unit;
 
 
 /**
- * Entry point classes define <code>onModuleLoad()</code>.
+ * Entry point classes define onModuleLoad()
  */
 public class ParkFinder implements EntryPoint {
-
-
-	HorizontalPanel mapPanel = new HorizontalPanel();
-	TabPanel tabPanel = new TabPanel();
-	VerticalPanel favouritesTabPanel = new VerticalPanel();
-	VerticalPanel searchTabPanel = new VerticalPanel();
+	public MapWidget map;
+//	public final LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
+	
+	private HorizontalPanel mapPanel = new HorizontalPanel();
+	private TabPanel tabPanel = new TabPanel();
+	private VerticalPanel favouritesTabPanel = new VerticalPanel();
+	private VerticalPanel searchTabPanel = new VerticalPanel();
+	
 
 
 	/**
@@ -73,10 +75,8 @@ public class ParkFinder implements EntryPoint {
 	private void buildMapUi() {
 		LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
 		
-		MapWidget map = new MapWidget(mapCenter, 2);
-		
+		map = new MapWidget(mapCenter, 12);
 		map.setSize("100%", "100%");
-		map.setZoomLevel(12);
 		
 		// Add some controls for the zoom level
 		map.addControl(new LargeMapControl());
@@ -119,8 +119,8 @@ public class ParkFinder implements EntryPoint {
 			}
 			
 		});
-		searchTabPanel.add(searchButton);
 		
+		searchTabPanel.add(searchButton);
 		favouritesTabPanel.add(new Button("Favourites content here"));
 	}
 }
