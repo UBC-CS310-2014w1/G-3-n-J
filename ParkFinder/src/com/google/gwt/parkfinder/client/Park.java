@@ -1,5 +1,7 @@
 package com.google.gwt.parkfinder.client;
 
+import java.util.LinkedList;
+
 public class Park {
 	String Name;
 	String StreetNumber;
