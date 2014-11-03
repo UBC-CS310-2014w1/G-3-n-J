@@ -48,33 +48,42 @@ public class ParkFinder implements EntryPoint {
 			"Please sign in to your Google Account to access the ParkFinder application.");
 	private Anchor signInLink = new Anchor("Sign In"); 
 	private Anchor signOutLink = new Anchor("Sign Out");
-
+	String HostPageBaseURL; // kludgy workaround b/c GWT.getHostPageBaseURL() is broke
+	
 	/**
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
 		// Check login status using login service.
-//	
-//		LoginServiceAsync loginService = GWT.create(LoginService.class);
-//		loginService.login(GWT.getHostPageBaseURL(), new AsyncCallback<LoginInfo>() {
-//			public void onFailure(Throwable error) {
-//				handleError(error);
-//			}
-//
-//			public void onSuccess(LoginInfo result) {
-//				loginInfo = result;
-//				if(loginInfo.isLoggedIn()) {
-//					loadParkFinder();
-//				} else {
+		
+		String HostPage = GWT.getHostPageBaseURL();
+		System.out.println(HostPage);
+		String ModuleName = GWT.getModuleName();
+		System.out.println(ModuleName);
+		String Module = GWT.getModuleBaseURL();
+		System.out.println(Module);
+	
+		LoginServiceAsync loginService = GWT.create(LoginService.class);
+
+		loginService.login(GWT.getHostPageBaseURL(), new AsyncCallback<LoginInfo>() {
+			public void onFailure(Throwable error) {
+				handleError(error);
+			}
+
+			public void onSuccess(LoginInfo result) {
+				loginInfo = result;
+				if(loginInfo.isLoggedIn()) {
+					loadParkFinder();
+				} else {
 					loadLogin();
-//				}
-//			}
-//		});
+				}
+			}
+		});
 	}
 	
 	private void loadLogin() {
 		// Assemble login panel.
-		signInLink.setHref("www.gmail.com");//loginInfo.getLoginUrl());
+		signInLink.setHref(loginInfo.getLoginUrl());
 		loginPanel.add(loginLabel);
 		loginPanel.add(signInLink);
 		RootPanel.get("signInOut").add(loginPanel);
@@ -82,7 +91,7 @@ public class ParkFinder implements EntryPoint {
 
 	private void loadParkFinder() {
 		
-//	    signOutLink.setHref(loginInfo.getLogoutUrl());
+	    signOutLink.setHref(loginInfo.getLogoutUrl());
 
 		/*
 		 * Asynchronously loads the Maps API.
@@ -102,7 +111,7 @@ public class ParkFinder implements EntryPoint {
 		initPanels();
 		initTabs();
 		
-//		RootPanel.get("signInOut").add(signOutLink);
+		RootPanel.get("signInOut").add(signOutLink);
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
 
