@@ -21,11 +21,6 @@ h1 {
 	float: left;
 }
 
-#signInOut {
-	position: absolute; 
-	top: 0;  /* temporarily in top left corner (out of the way) */
-}
-
 
 /** Most GWT widgets already have a style name defined */
 .gwt-DialogBox {

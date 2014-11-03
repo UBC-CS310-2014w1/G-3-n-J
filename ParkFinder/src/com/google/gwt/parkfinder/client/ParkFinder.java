@@ -48,21 +48,12 @@ public class ParkFinder implements EntryPoint {
 			"Please sign in to your Google Account to access the ParkFinder application.");
 	private Anchor signInLink = new Anchor("Sign In"); 
 	private Anchor signOutLink = new Anchor("Sign Out");
-	String HostPageBaseURL; // kludgy workaround b/c GWT.getHostPageBaseURL() is broke
 	
 	/**
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
 		// Check login status using login service.
-		
-		String HostPage = GWT.getHostPageBaseURL();
-		System.out.println(HostPage);
-		String ModuleName = GWT.getModuleName();
-		System.out.println(ModuleName);
-		String Module = GWT.getModuleBaseURL();
-		System.out.println(Module);
-	
 		LoginServiceAsync loginService = GWT.create(LoginService.class);
 
 		loginService.login(GWT.getHostPageBaseURL(), new AsyncCallback<LoginInfo>() {
