@@ -134,8 +134,7 @@ public class ParkFinder implements EntryPoint {
 
 					@Override
 					public void onClick(ClickEvent event) {
-						// TODO: What happens when this button is clicked?
-						
+						loadParks();						
 					}
 				});
 				
@@ -146,6 +145,18 @@ public class ParkFinder implements EntryPoint {
 				adminBox.show();
 			}
 			
+		});
+	}
+	
+	private void loadParks() {
+		parkService.storeParkList(new AsyncCallback<Void>() {
+			public void onFailure(Throwable error) {
+			}
+
+			public void onSuccess(Void ignore) {
+				// display parks
+				// call parkService.getParkList() to return list of parks
+			}
 		});
 	}
 
@@ -206,17 +217,5 @@ public class ParkFinder implements EntryPoint {
 		if (error instanceof NotLoggedInException) {
 			Window.Location.replace(loginInfo.getLogoutUrl());
 		}
-	}
-	
-	private void loadParks() {
-		parkService.storeParkList(new AsyncCallback<Void>() {
-			public void onFailure(Throwable error) {
-			}
-
-			public void onSuccess(Void ignore) {
-				// display parks
-				// call parkService.getParkList() to return list of parks
-			}
-		});
 	}
 }
