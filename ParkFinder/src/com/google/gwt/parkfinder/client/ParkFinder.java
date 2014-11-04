@@ -30,6 +30,7 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.dom.client.Style.Unit;
@@ -126,11 +127,17 @@ public class ParkFinder implements EntryPoint {
 
 	private void initAdmin() {
 		adminButton = new Button("Admin", new ClickHandler() {
-
+			
+			public Grid parsedDataGridDisplay = new Grid(2, 10);
+			
+			public Grid getGrid() {
+				return parsedDataGridDisplay;
+			}
+			
 			@Override
 			public void onClick(ClickEvent event) {
 				DialogBox adminBox = new DialogBox();
-//				Grid parsedDataGridDisplay = new Grid(2, 10);
+				VerticalPanel adminMainPanel = new VerticalPanel();
 				
 				adminBox.setText("Admin Panel");
 				
@@ -139,11 +146,20 @@ public class ParkFinder implements EntryPoint {
 					@Override
 					public void onClick(ClickEvent event) {
 						loadParks();						
+						// TODO: What happens when this button is clicked?
+						// Add parks to grid columns
+						Grid grid = getGrid();
+						grid.setWidget(1,1,new Button("Parse button was clicked"));
+						
+						loadParks();
 					}
 				});
+
 				
-				adminBox.add(startParseButton);
-//				adminBox.add(parsedDataGridDisplay);
+				
+				adminMainPanel.add(startParseButton);
+				adminMainPanel.add(parsedDataGridDisplay);
+				adminBox.add(adminMainPanel);
 				adminBox.center();
 				adminBox.setAutoHideEnabled(true);
 				adminBox.show();
