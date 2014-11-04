@@ -7,6 +7,15 @@
 
   <!-- Servlets -->
   <servlet>
+    <servlet-name>loginService</servlet-name>
+    <servlet-class>com.google.gwt.parkfinder.server.LoginServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>loginService</servlet-name>
+    <url-pattern>/parkfinder/login</url-pattern>
+  </servlet-mapping>
+  <servlet>
     <servlet-name>greetServlet</servlet-name>
     <servlet-class>com.google.gwt.parkfinder.server.GreetingServiceImpl</servlet-class>
   </servlet>
