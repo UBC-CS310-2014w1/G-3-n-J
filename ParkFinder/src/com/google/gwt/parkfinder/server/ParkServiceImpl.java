@@ -56,6 +56,7 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 			park.setNeighbourhoodName(nextLine[9]);
 			park.setNeighbourhoodURL(nextLine[10]);
 			parkList.add(park);
+			System.out.println(park.getName());
 		}
 		
 		PersistenceManager pm = getPersistenceManager();
@@ -68,6 +69,7 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 		reader.close();
 		
 		// call getParkList() to return parkList
+		getParkList();
 	  }
 	
 	@Override

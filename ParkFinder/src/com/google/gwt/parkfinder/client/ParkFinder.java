@@ -1,5 +1,7 @@
 package com.google.gwt.parkfinder.client;
 
+import java.util.List;
+
 import com.google.gwt.maps.client.InfoWindowContent;
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.Maps;
@@ -10,6 +12,7 @@ import com.google.gwt.parkfinder.client.LoginInfo;
 import com.google.gwt.parkfinder.client.LoginService;
 import com.google.gwt.parkfinder.client.LoginServiceAsync;
 import com.google.gwt.parkfinder.client.NotLoggedInException;
+import com.google.gwt.parkfinder.server.Park;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -150,7 +153,26 @@ public class ParkFinder implements EntryPoint {
 			public void onSuccess(Void ignore) {
 				// display parks
 				// call parkService.getParkList() to return list of parks
+				getParkList();
 			}
+		});
+	}
+	
+	private void getParkList() {
+		parkService.getParkList(new AsyncCallback<List<Park>>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onSuccess(List<Park> result) {
+				// TODO Auto-generated method stub
+				
+			}
+			
 		});
 	}
 
