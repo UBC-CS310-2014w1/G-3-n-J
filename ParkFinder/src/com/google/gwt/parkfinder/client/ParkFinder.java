@@ -6,6 +6,10 @@ import com.google.gwt.maps.client.Maps;
 import com.google.gwt.maps.client.control.LargeMapControl;
 import com.google.gwt.maps.client.geom.LatLng;
 import com.google.gwt.maps.client.overlay.Marker;
+import com.google.gwt.parkfinder.client.LoginInfo;
+import com.google.gwt.parkfinder.client.LoginService;
+import com.google.gwt.parkfinder.client.LoginServiceAsync;
+import com.google.gwt.parkfinder.client.NotLoggedInException;
 import com.google.gwt.parkfinder.shared.FieldVerifier;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -22,6 +26,7 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -42,6 +47,8 @@ public class ParkFinder implements EntryPoint {
 	private TabPanel tabPanel = new TabPanel();
 	private VerticalPanel favouritesTabPanel = new VerticalPanel();
 	private VerticalPanel searchTabPanel = new VerticalPanel();
+	private Button adminButton;
+	
 	
 
 	private LoginInfo loginInfo = null;
@@ -100,17 +107,49 @@ public class ParkFinder implements EntryPoint {
 		});
 
 
-
+		initAdmin();
 		initPanels();
 		initTabs();
 		
+		
 		RootPanel.get("signInOut").add(signOutLink);
+		// Adding admin button to signOutLink div temporarily
+		RootPanel.get("signInOut").add(adminButton);
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
 
 
 	}
 
+
+	private void initAdmin() {
+		adminButton = new Button("Admin", new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				DialogBox adminBox = new DialogBox();
+//				Grid parsedDataGridDisplay = new Grid(2, 10);
+				
+				adminBox.setText("Admin Panel");
+				
+				Button startParseButton = new Button("Parse data", new ClickHandler() {
+
+					@Override
+					public void onClick(ClickEvent event) {
+						// TODO: What happens when this button is clicked?
+						
+					}
+				});
+				
+				adminBox.add(startParseButton);
+//				adminBox.add(parsedDataGridDisplay);
+				adminBox.center();
+				adminBox.setAutoHideEnabled(true);
+				adminBox.show();
+			}
+			
+		});
+	}
 
 	private void buildMapUi() {
 		LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
