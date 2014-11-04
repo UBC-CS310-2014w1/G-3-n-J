@@ -1,4 +1,5 @@
 package com.google.gwt.parkfinder.client;
+
 import com.google.gwt.maps.client.InfoWindowContent;
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.Maps;
@@ -9,16 +10,10 @@ import com.google.gwt.parkfinder.client.LoginInfo;
 import com.google.gwt.parkfinder.client.LoginService;
 import com.google.gwt.parkfinder.client.LoginServiceAsync;
 import com.google.gwt.parkfinder.client.NotLoggedInException;
-import com.google.gwt.parkfinder.shared.FieldVerifier;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
@@ -30,11 +25,9 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.dom.client.Style.Unit;
-
 
 /**
  * Entry point classes define onModuleLoad()
@@ -42,8 +35,9 @@ import com.google.gwt.dom.client.Style.Unit;
 
 public class ParkFinder implements EntryPoint {
 	public MapWidget map;
-//	public final LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
-	
+	// public final LatLng mapCenter = LatLng.newInstance(49.240902,
+	// -123.155935);
+
 	private HorizontalPanel mapPanel = new HorizontalPanel();
 	private TabPanel tabPanel = new TabPanel();
 	private VerticalPanel favouritesTabPanel = new VerticalPanel();
@@ -54,33 +48,34 @@ public class ParkFinder implements EntryPoint {
 	private VerticalPanel loginPanel = new VerticalPanel();
 	private Label loginLabel = new Label(
 			"Please sign in to your Google Account to access the ParkFinder application.");
-	private Anchor signInLink = new Anchor("Sign In"); 
+	private Anchor signInLink = new Anchor("Sign In");
 	private Anchor signOutLink = new Anchor("Sign Out");
-	
+
 	private final ParkServiceAsync parkService = GWT.create(ParkService.class);
-	
+
 	/**
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
 		// Check login status using login service.
 		LoginServiceAsync loginService = GWT.create(LoginService.class);
-		loginService.login(GWT.getHostPageBaseURL(), new AsyncCallback<LoginInfo>() {
-			public void onFailure(Throwable error) {
-				handleError(error);
-			}
+		loginService.login(GWT.getHostPageBaseURL(),
+				new AsyncCallback<LoginInfo>() {
+					public void onFailure(Throwable error) {
+						handleError(error);
+					}
 
-			public void onSuccess(LoginInfo result) {
-				loginInfo = result;
-				if(loginInfo.isLoggedIn()) {
-					loadParkFinder();
-				} else {
-					loadLogin();
-				}
-			}
-		});
+					public void onSuccess(LoginInfo result) {
+						loginInfo = result;
+						if (loginInfo.isLoggedIn()) {
+							loadParkFinder();
+						} else {
+							loadLogin();
+						}
+					}
+				});
 	}
-	
+
 	private void loadLogin() {
 		// Assemble login panel.
 		signInLink.setHref(loginInfo.getLoginUrl());
@@ -90,12 +85,12 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void loadParkFinder() {
-		
-	    signOutLink.setHref(loginInfo.getLogoutUrl());
+
+		signOutLink.setHref(loginInfo.getLogoutUrl());
 
 		/*
 		 * Asynchronously loads the Maps API.
-		 *
+		 * 
 		 * The first parameter should be a valid Maps API Key to deploy this
 		 * application on a public server, but a blank key will work for an
 		 * application served from localhost.
@@ -106,68 +101,47 @@ public class ParkFinder implements EntryPoint {
 			}
 		});
 
-
 		initAdmin();
 		initPanels();
 		initTabs();
-		
-		
+
 		RootPanel.get("signInOut").add(signOutLink);
 		// Adding admin button to signOutLink div temporarily
 		RootPanel.get("signInOut").add(adminButton);
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
 
-
-		
-		
-		
 	}
-
 
 	private void initAdmin() {
 		adminButton = new Button("Admin", new ClickHandler() {
-			
-			public Grid parsedDataGridDisplay = new Grid(2, 10);
-			
-			public Grid getGrid() {
-				return parsedDataGridDisplay;
-			}
-			
+
 			@Override
 			public void onClick(ClickEvent event) {
 				DialogBox adminBox = new DialogBox();
-				VerticalPanel adminMainPanel = new VerticalPanel();
-				
+				// Grid parsedDataGridDisplay = new Grid(2, 10);
+
 				adminBox.setText("Admin Panel");
-				
-				Button startParseButton = new Button("Parse data", new ClickHandler() {
 
-					@Override
-					public void onClick(ClickEvent event) {
-						loadParks();						
-						// TODO: What happens when this button is clicked?
-						// Add parks to grid columns
-						Grid grid = getGrid();
-						grid.setWidget(1,1,new Button("Parse button was clicked"));
-						
-						loadParks();
-					}
-				});
+				Button startParseButton = new Button("Parse data",
+						new ClickHandler() {
 
-				
-				
-				adminMainPanel.add(startParseButton);
-				adminMainPanel.add(parsedDataGridDisplay);
-				adminBox.add(adminMainPanel);
+							@Override
+							public void onClick(ClickEvent event) {
+								loadParks();
+							}
+						});
+
+				adminBox.add(startParseButton);
+				// adminBox.add(parsedDataGridDisplay);
 				adminBox.center();
 				adminBox.setAutoHideEnabled(true);
 				adminBox.show();
 			}
-			
+
 		});
 	}
-	
+
 	private void loadParks() {
 		parkService.storeParkList(new AsyncCallback<Void>() {
 			public void onFailure(Throwable error) {
@@ -182,7 +156,7 @@ public class ParkFinder implements EntryPoint {
 
 	private void buildMapUi() {
 		LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
-		
+
 		map = new MapWidget(mapCenter, 12);
 		map.setSize("100%", "100%");
 
@@ -203,7 +177,6 @@ public class ParkFinder implements EntryPoint {
 		RootPanel.get("mapPanel").add(dock);
 	}
 
-
 	private void initTabs() {
 		tabPanel.setWidth("100%");
 		tabPanel.add(searchTabPanel, "Search");
@@ -213,20 +186,21 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void initPanels() {
-		Button searchButton = new Button("Potential park page display", new ClickHandler() {
+		Button searchButton = new Button("Potential park page display",
+				new ClickHandler() {
 
-			@Override
-			public void onClick(ClickEvent event) {
-				// TODO Auto-generated method stub
-				DialogBox message = new DialogBox();
-				message.add(new Button("Park info content"));
-				message.setText("Park Name");
-				message.setAutoHideEnabled(true);
-				message.center();
-				message.show();
-			}
+					@Override
+					public void onClick(ClickEvent event) {
+						// TODO Auto-generated method stub
+						DialogBox message = new DialogBox();
+						message.add(new Button("Park info content"));
+						message.setText("Park Name");
+						message.setAutoHideEnabled(true);
+						message.center();
+						message.show();
+					}
 
-		});
+				});
 
 		searchTabPanel.add(searchButton);
 		favouritesTabPanel.add(new Button("Favourites content here"));

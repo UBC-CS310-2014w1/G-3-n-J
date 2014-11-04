@@ -8,7 +8,6 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-import com.google.appengine.api.users.User;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class Park implements Serializable {
@@ -16,8 +15,6 @@ public class Park implements Serializable {
 	@PrimaryKey
 	@Persistent
 	private String ParkID;
-	@Persistent
-	private User User;
 	@Persistent
 	private String Name;
 	@Persistent
@@ -41,9 +38,8 @@ public class Park implements Serializable {
 	}
 
 	// Use when adding to favorite
-	public Park(User user, String parkID) {
+	public Park(String parkID) {
 		this();
-		this.User = user;
 		this.ParkID = parkID;
 	}
 
@@ -53,9 +49,6 @@ public class Park implements Serializable {
 		return ParkID;
 	}
 
-	public User getUser() {
-		return User;
-	}
 
 	public String getName() {
 		return Name;
@@ -91,10 +84,6 @@ public class Park implements Serializable {
 
 	public void setParkID(String parkID) {
 		ParkID = parkID;
-	}
-
-	public void setUser(User user) {
-		User = user;
 	}
 
 	public void setName(String name) {
