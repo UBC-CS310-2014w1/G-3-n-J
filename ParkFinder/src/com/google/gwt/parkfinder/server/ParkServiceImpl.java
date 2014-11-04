@@ -20,32 +20,32 @@ import com.google.gwt.parkfinder.server.Park;
 import com.google.gwt.parkfinder.client.ParkService;
 import com.google.gwt.parkfinder.client.NotLoggedInException;
 import com.google.gwt.parkfinder.server.ParkServiceImpl;
+import com.google.gwt.sample.stockwatcher.server.Stock;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-public class ParkServiceImpl extends RemoteServiceServlet implements
-		ParkService {
+public class ParkServiceImpl extends RemoteServiceServlet implements ParkService {
 
-	private static final Logger LOG = Logger.getLogger(ParkServiceImpl.class
-			.getName());
-	private static final PersistenceManagerFactory PMF = JDOHelper
-			.getPersistenceManagerFactory("transactions-optional");
+	private static final Logger LOG = Logger.getLogger(ParkServiceImpl.class.getName());
+	private static final PersistenceManagerFactory PMF = JDOHelper.getPersistenceManagerFactory("transactions-optional");
 
 	public List<Park> parkList = new ArrayList<Park>();
-
+	
 	@Override
-	public List<Park> getParkList() throws IOException, NotLoggedInException {
+	public void storeParkList() throws IOException, NotLoggedInException {
 		checkLoggedIn();
-		PersistenceManager pm = getPersistenceManager();
 
 		URL PARK_CSV = new URL("http://m.uploadedit.com/b041/1414532771299.txt");
-		BufferedReader in = new BufferedReader(new InputStreamReader(
-				PARK_CSV.openStream()));
+		BufferedReader in = new BufferedReader(new InputStreamReader(PARK_CSV.openStream()));
 		CSVReader reader = new CSVReader(in);
+		reader.readNext();
+		
+		// Clear the old list of park
+		parkList.clear();
+		
 		String[] nextLine = null;
 		// skip header row
-		reader.readNext();
 		while ((nextLine = reader.readNext()) != null) {
 			Park park = new Park();
 			park.setParkID(nextLine[0]);
@@ -56,19 +56,29 @@ public class ParkServiceImpl extends RemoteServiceServlet implements
 			park.setNeighbourhoodName(nextLine[9]);
 			park.setNeighbourhoodURL(nextLine[10]);
 			parkList.add(park);
-			try {
-				pm.makePersistent(park);
-			} finally {
-				pm.close();
-			}
 		}
+		
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			pm.makePersistent(parkList);
+		} finally {
+			pm.close();
+		}
+		
 		reader.close();
-		System.out.println(parkList);
+		
+		// call getParkList() to return parkList
+	  }
+	
+	@Override
+	public List<Park> getParkList() throws IOException, NotLoggedInException {
+		checkLoggedIn();
 		return parkList;
 	}
 
 	@Override
 	public Park getParkInfo(String id) throws NotLoggedInException {
+		checkLoggedIn();
 		if (parkList.isEmpty())
 			return null;
 		for (int index = 0; index <= parkList.size(); index++) {
@@ -81,6 +91,7 @@ public class ParkServiceImpl extends RemoteServiceServlet implements
 
 	@Override
 	public List<Park> searchName(String name) throws NotLoggedInException {
+		checkLoggedIn();
 		if (parkList.isEmpty())
 			return null;
 		List<Park> nameMatched = new ArrayList<Park>();
@@ -106,4 +117,5 @@ public class ParkServiceImpl extends RemoteServiceServlet implements
 	private PersistenceManager getPersistenceManager() {
 		return PMF.getPersistenceManager();
 	}
+
 }

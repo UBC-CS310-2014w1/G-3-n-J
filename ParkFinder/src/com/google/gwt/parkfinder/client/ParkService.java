@@ -9,7 +9,11 @@ import com.google.gwt.parkfinder.server.Park;
 
 @RemoteServiceRelativePath("Park")
 public interface ParkService extends RemoteService {
-	// Load entire park list
+	
+	// Store the parsed list of parks
+	public void storeParkList() throws IOException, NotLoggedInException;
+	
+	// Return the stored list of parks
 	public List<Park> getParkList() throws IOException, NotLoggedInException;
 
 	// Return a single park by inputing the ParkID
