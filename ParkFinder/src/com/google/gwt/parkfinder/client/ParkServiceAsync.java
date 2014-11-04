@@ -1,12 +1,23 @@
+
 package com.google.gwt.parkfinder.client;
 
 import java.util.List;
-
 import com.google.gwt.user.client.rpc.AsyncCallback;
-
-import com.google.gwt.parkfinder.client.Park;
+import com.google.gwt.parkfinder.server.Park;
 
 public interface ParkServiceAsync {
-	void getParkList(AsyncCallback<List<Park>> callback);
-	void getPark(String id, AsyncCallback<Park> callback);
+	
+	// Store the parsed list of parks
+	public void storeParkList(AsyncCallback<Void> async);
+	
+	// Return the stored list of parks
+	public void getParkList(AsyncCallback<List<Park>> async);
+
+	// Return a single park by inputing the ParkID
+	// Used for query
+	public void getParkInfo(String id, AsyncCallback<Park> async);
+	
+	// Return a list of parks by inputing the Name
+	// Used for query
+	public void searchName(String name, AsyncCallback<List<Park>> async);
 }
