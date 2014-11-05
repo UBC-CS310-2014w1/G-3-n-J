@@ -25,7 +25,9 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
@@ -37,7 +39,6 @@ import com.google.gwt.dom.client.Style.Unit;
  */
 public class ParkFinder implements EntryPoint {
 	public MapWidget map;
-	// public final LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
 	
 	private HorizontalPanel mapPanel = new HorizontalPanel();
 	private TabPanel tabPanel = new TabPanel();
@@ -106,7 +107,7 @@ public class ParkFinder implements EntryPoint {
 		});
 
 		initAdmin();
-		initPanels();
+		initTabPanels();
 		initTabs();
 
 		RootPanel.get("signInOut").add(signOutLink);
@@ -218,8 +219,13 @@ public class ParkFinder implements EntryPoint {
 
 	}
 
-	private void initPanels() {
-		Button searchButton = new Button("Potential park page display",
+	private void initTabPanels() {
+		loadSearchTabContent();
+		favouritesTabPanel.add(new Button("Favourites content here"));
+	}
+	
+	private void loadSearchTabContent() {
+		Button searchButton = new Button("Arbutus Ridge Park Page Preview",
 				new ClickHandler() {
 
 					@Override
@@ -239,25 +245,37 @@ public class ParkFinder implements EntryPoint {
 
 							@Override
 							public void onSuccess(List<Park> parks) {
-								// TODO Auto-generated method stub
-								message.setText(parks.get(1).getName());
-								TextBox info = new TextBox();
-								info.setText(parks.get(1).getStreetNumber() + parks.get(1).getStreetName());
-								msgPanel.add(info);
+								Park samplePark = parks.get(0);
+								message.setText(samplePark.getName());
+								buildParkPage(samplePark, msgPanel);
 							}
 							
 						});
-						msgPanel.add(new Button("Add to Favourites"));
-						
 						
 						message.setAutoHideEnabled(true);
-						message.center();
+						message.setPopupPosition(300, 150);
 						message.show();
 					}
 				});
-
 		searchTabPanel.add(searchButton);
-		favouritesTabPanel.add(new Button("Favourites content here"));
+	}
+	
+	private void buildParkPage(Park park, Panel panel) {
+		Image img = new Image();
+		img.setUrlAndVisibleRect("http://www.google.com/images/logo.gif", 0, 0, 276, 110);
+		
+		TextBox address = new TextBox();
+		address.setText("Address: " + park.getStreetNumber() + " " + park.getStreetName());
+		address.setWidth("250px");
+		
+		TextBox nb = new TextBox();
+		nb.setText("Neighbourhood: " + park.getNeighbourhoodName());
+		nb.setWidth("250px");
+		
+		panel.add(img);
+		panel.add(nb);
+		panel.add(address);
+		panel.add(new Button("Add to Favourites"));
 	}
 
 	private void handleError(Throwable error) {
