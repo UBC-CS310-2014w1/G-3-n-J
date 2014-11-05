@@ -2,6 +2,7 @@ package com.google.gwt.parkfinder.server;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
@@ -28,9 +29,9 @@ public class Park implements Serializable {
 	@Persistent
 	private String NeighbourhoodURL;
 	@Persistent
-	private ArrayList<Facility> Facility;
+	private List<Facility> Facility;
 	@Persistent
-	private ArrayList<Washroom> Washroom;
+	private List<Washroom> Washroom;
 	
 	// Use when storing to database
 	public Park() {
@@ -74,11 +75,11 @@ public class Park implements Serializable {
 		return NeighbourhoodURL;
 	}
 
-	public ArrayList<Facility> getFacility() {
+	public List<Facility> getFacility() {
 		return Facility;
 	}
 
-	public ArrayList<Washroom> getWashroom() {
+	public List<Washroom> getWashroom() {
 		return Washroom;
 	}
 

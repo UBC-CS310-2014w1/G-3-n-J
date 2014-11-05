@@ -1,8 +1,12 @@
 package com.google.gwt.parkfinder.server;
 
-public class Facility {
-	String FacilityCount;
-	String FacilityType;
-	String SpecialFeature;
+import javax.jdo.annotations.Persistent;
 
+public class Facility {
+	@Persistent
+	String FacilityCount;
+	@Persistent
+	String FacilityType;
+	@Persistent
+	String SpecialFeature;
 }

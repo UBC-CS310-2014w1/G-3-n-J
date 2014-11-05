@@ -4,15 +4,16 @@ package com.google.gwt.parkfinder.server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
+import javax.jdo.Query;
 
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
@@ -30,7 +31,7 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 	private static final Logger LOG = Logger.getLogger(ParkServiceImpl.class.getName());
 	private static final PersistenceManagerFactory PMF = JDOHelper.getPersistenceManagerFactory("transactions-optional");
 
-	public List<Park> parkList = new ArrayList<Park>();
+	public List<Park> parkList = new LinkedList<Park>();
 	
 	@Override
 	public void storeParkList() throws IOException, NotLoggedInException {
@@ -44,7 +45,7 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 			reader.readNext();
 
 			// Clear the old list of park
-			parkList.clear();
+			pm.evictAll();
 
 			String[] nextLine = null;
 			// skip header row
@@ -57,9 +58,9 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 				park.setGoogleMapDest(nextLine[7]);
 				park.setNeighbourhoodName(nextLine[9]);
 				park.setNeighbourhoodURL(nextLine[10]);
-				parkList.add(park);
+				pm.makePersistent(park);
+				// parkList.add(park);
 			}
-
 			reader.close();
 
 			System.out.println("Successfully called storeParkList()");
@@ -73,14 +74,24 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 	public List<Park> getParkList() throws NotLoggedInException {
 		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
+		List<Park> listOfPark = new ArrayList<Park>();
 		try {
+			Query q = pm.newQuery(Park.class);
+			List<Park> parks = (List<Park>) q.execute();
+		    q.setOrdering("ParkID");
+			for (Park park : parks) {
+				listOfPark.add(park);
+			}
 			System.out.println("Successfully called getParkList()");
-			return parkList;
+			return listOfPark;
+
 		} finally {
 			pm.close();
 		}
+		//return parkList;
 	}
 
+	
 	@Override
 	public Park getParkInfo(String id) throws NotLoggedInException {
 		checkLoggedIn();

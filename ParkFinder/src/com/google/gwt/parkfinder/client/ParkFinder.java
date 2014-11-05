@@ -39,14 +39,14 @@ import com.google.gwt.dom.client.Style.Unit;
  */
 public class ParkFinder implements EntryPoint {
 	public MapWidget map;
-	
+
 	private HorizontalPanel mapPanel = new HorizontalPanel();
 	private TabPanel tabPanel = new TabPanel();
 	private VerticalPanel searchTabPanel = new VerticalPanel();
 	private VerticalPanel favouritesTabPanel = new VerticalPanel();
 	private DialogBox adminBox = new DialogBox();
 	private Button adminButton = new Button();
-	
+
 	private int sampleNumber = 16;
 	private Grid dataGrid = new Grid(sampleNumber + 1, 3);
 
@@ -171,16 +171,16 @@ public class ParkFinder implements EntryPoint {
 				dataGrid.setText(0, 0, "ID");
 				dataGrid.setText(0, 1, "Name");
 				dataGrid.setText(0, 2, "Address");
-				
+
 				int i = 0;
-				
+
 				while (parks.get(i) != null && i < sampleNumber) {
 					String parkID = parks.get(i).getParkID();
 					String parkName = parks.get(i).getName();
 					String parkAddress = parks.get(i).getStreetNumber() + " " + parks.get(i).getStreetName();
-					dataGrid.setText(i+1, 0, parkID);
-					dataGrid.setText(i+1, 1, parkName);
-					dataGrid.setText(i+1, 2, parkAddress);
+					dataGrid.setText(i + 1, 0, parkID);
+					dataGrid.setText(i + 1, 1, parkName);
+					dataGrid.setText(i + 1, 2, parkAddress);
 					i++;
 				}
 				adminBox.setWidget(dataGrid);
@@ -201,8 +201,7 @@ public class ParkFinder implements EntryPoint {
 		map.addOverlay(new Marker(mapCenter));
 
 		// Add an info window to highlight a point of interest
-		map.getInfoWindow().open(map.getCenter(),
-				new InfoWindowContent("Ravine Park"));
+		map.getInfoWindow().open(map.getCenter(), new InfoWindowContent("Ravine Park"));
 
 		final DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
 		dock.addNorth(map, 500);
@@ -223,7 +222,7 @@ public class ParkFinder implements EntryPoint {
 		loadSearchTabContent();
 		favouritesTabPanel.add(new Button("Favourites content here"));
 	}
-	
+
 	private void loadSearchTabContent() {
 		Button searchButton = new Button("Arbutus Ridge Park Page Preview",
 				new ClickHandler() {
@@ -234,24 +233,24 @@ public class ParkFinder implements EntryPoint {
 						final DialogBox message = new DialogBox();
 						final VerticalPanel msgPanel = new VerticalPanel();
 						message.add(msgPanel);
-						
+
 						parkService.getParkList(new AsyncCallback<List<Park>>() {
 
-							@Override
-							public void onFailure(Throwable caught) {
-								// TODO Auto-generated method stub
-								System.out.println("Cannot get park list");
-							}
+									@Override
+									public void onFailure(Throwable caught) {
+										// TODO Auto-generated method stub
+										System.out.println("Cannot get park list");
+									}
 
-							@Override
-							public void onSuccess(List<Park> parks) {
-								Park samplePark = parks.get(0);
-								message.setText(samplePark.getName());
-								buildParkPage(samplePark, msgPanel);
-							}
-							
-						});
-						
+									@Override
+									public void onSuccess(List<Park> parks) {
+										Park samplePark = parks.get(0);
+										message.setText(samplePark.getName());
+										buildParkPage(samplePark, msgPanel);
+									}
+
+								});
+
 						message.setAutoHideEnabled(true);
 						message.setPopupPosition(300, 150);
 						message.show();
@@ -259,19 +258,19 @@ public class ParkFinder implements EntryPoint {
 				});
 		searchTabPanel.add(searchButton);
 	}
-	
+
 	private void buildParkPage(Park park, Panel panel) {
 		Image img = new Image();
 		img.setUrlAndVisibleRect("http://www.google.com/images/logo.gif", 0, 0, 276, 110);
-		
+
 		TextBox address = new TextBox();
 		address.setText("Address: " + park.getStreetNumber() + " " + park.getStreetName());
 		address.setWidth("250px");
-		
+
 		TextBox nb = new TextBox();
 		nb.setText("Neighbourhood: " + park.getNeighbourhoodName());
 		nb.setWidth("250px");
-		
+
 		panel.add(img);
 		panel.add(nb);
 		panel.add(address);

@@ -1,9 +1,14 @@
 package com.google.gwt.parkfinder.server;
 
-public class Washroom {
-	String Location;
-	String Notes;
-	String SummerHours;
-	String WinterHours;
+import javax.jdo.annotations.Persistent;
 
+public class Washroom {
+	@Persistent
+	String Location;
+	@Persistent
+	String Notes;
+	@Persistent
+	String SummerHours;
+	@Persistent
+	String WinterHours;
 }
