@@ -1,6 +1,7 @@
 package com.google.gwt.parkfinder.client;
 
 import java.util.List;
+
 import com.google.gwt.maps.client.InfoWindowContent;
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.Maps;
@@ -27,6 +28,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.dom.client.Style.Unit;
 
@@ -223,9 +225,31 @@ public class ParkFinder implements EntryPoint {
 					@Override
 					public void onClick(ClickEvent event) {
 						// TODO Auto-generated method stub
-						DialogBox message = new DialogBox();
-						message.add(new Button("Park info content"));
-						message.setText("Park Name");
+						final DialogBox message = new DialogBox();
+						final VerticalPanel msgPanel = new VerticalPanel();
+						message.add(msgPanel);
+						
+						parkService.getParkList(new AsyncCallback<List<Park>>() {
+
+							@Override
+							public void onFailure(Throwable caught) {
+								// TODO Auto-generated method stub
+								System.out.println("Cannot get park list");
+							}
+
+							@Override
+							public void onSuccess(List<Park> parks) {
+								// TODO Auto-generated method stub
+								message.setText(parks.get(1).getName());
+								TextBox info = new TextBox();
+								info.setText(parks.get(1).getStreetNumber() + parks.get(1).getStreetName());
+								msgPanel.add(info);
+							}
+							
+						});
+						msgPanel.add(new Button("Add to Favourites"));
+						
+						
 						message.setAutoHideEnabled(true);
 						message.center();
 						message.show();
