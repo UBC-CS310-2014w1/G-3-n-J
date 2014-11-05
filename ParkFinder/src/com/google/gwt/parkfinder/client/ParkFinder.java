@@ -164,6 +164,7 @@ public class ParkFinder implements EntryPoint {
 			public void onSuccess(List<Park> parks) {
 				System.out.println("getParkList() ran successfully");
 
+				adminBox.setText("Successfully parsed data into database");
 				dataGrid.setText(0, 0, "ID");
 				dataGrid.setText(0, 1, "Name");
 				dataGrid.setText(0, 2, "Address");

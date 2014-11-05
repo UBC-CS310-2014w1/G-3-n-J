@@ -36,72 +36,86 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 	public void storeParkList() throws IOException, NotLoggedInException {
 		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
-
-		URL PARK_CSV = new URL("http://m.uploadedit.com/b041/1414532771299.txt");
-		BufferedReader in = new BufferedReader(new InputStreamReader(PARK_CSV.openStream()));
-		CSVReader reader = new CSVReader(in);
-		reader.readNext();
-		
-		// Clear the old list of park
-		parkList.clear();
-		
-		String[] nextLine = null;
-		// skip header row
-		while ((nextLine = reader.readNext()) != null) {
-			Park park = new Park();
-			park.setParkID(nextLine[0]);
-			park.setName(nextLine[1]);
-			park.setStreetNumber(nextLine[3]);
-			park.setStreetName(nextLine[4]);
-			park.setGoogleMapDest(nextLine[7]);
-			park.setNeighbourhoodName(nextLine[9]);
-			park.setNeighbourhoodURL(nextLine[10]);
-			parkList.add(park);
-		}
-		
-		/*
 		try {
-			pm.makePersistent(parkList);
+
+			URL PARK_CSV = new URL("http://m.uploadedit.com/b041/1414532771299.txt");
+			BufferedReader in = new BufferedReader(new InputStreamReader(PARK_CSV.openStream()));
+			CSVReader reader = new CSVReader(in);
+			reader.readNext();
+
+			// Clear the old list of park
+			parkList.clear();
+
+			String[] nextLine = null;
+			// skip header row
+			while ((nextLine = reader.readNext()) != null) {
+				Park park = new Park();
+				park.setParkID(nextLine[0]);
+				park.setName(nextLine[1]);
+				park.setStreetNumber(nextLine[3]);
+				park.setStreetName(nextLine[4]);
+				park.setGoogleMapDest(nextLine[7]);
+				park.setNeighbourhoodName(nextLine[9]);
+				park.setNeighbourhoodURL(nextLine[10]);
+				parkList.add(park);
+			}
+
+			reader.close();
+
+			System.out.println("Successfully called storeParkList()");
+
 		} finally {
 			pm.close();
 		}
-		*/ 
-		reader.close();
-		
-		System.out.println("Successfully called storeParkList()");
-	  }
-	
+	}
+
 	@Override
 	public List<Park> getParkList() throws NotLoggedInException {
-		System.out.println("Successfully called getParkList()");
-		return parkList;
+		checkLoggedIn();
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			System.out.println("Successfully called getParkList()");
+			return parkList;
+		} finally {
+			pm.close();
+		}
 	}
 
 	@Override
 	public Park getParkInfo(String id) throws NotLoggedInException {
 		checkLoggedIn();
-		if (parkList.isEmpty())
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			if (parkList.isEmpty())
+				return null;
+			for (int index = 0; index <= parkList.size(); index++) {
+				Park park = parkList.get(index);
+				if (park.getParkID() == id)
+					return park;
+			}
 			return null;
-		for (int index = 0; index <= parkList.size(); index++) {
-			Park park = parkList.get(index);
-			if (park.getParkID() == id)
-				return park;
+		} finally {
+			pm.close();
 		}
-		return null;
 	}
 
 	@Override
 	public List<Park> searchName(String name) throws NotLoggedInException {
 		checkLoggedIn();
-		if (parkList.isEmpty())
-			return null;
-		List<Park> nameMatched = new ArrayList<Park>();
-		for (int index = 0; index <= parkList.size(); index++) {
-			Park park = parkList.get(index);
-			if (park.getName().contains(name))
-				nameMatched.add(park);
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			if (parkList.isEmpty())
+				return null;
+			List<Park> nameMatched = new ArrayList<Park>();
+			for (int index = 0; index <= parkList.size(); index++) {
+				Park park = parkList.get(index);
+				if (park.getName().contains(name))
+					nameMatched.add(park);
+			}
+			return nameMatched;
+		} finally {
+			pm.close();
 		}
-		return nameMatched;
 	}
 
 	private void checkLoggedIn() throws NotLoggedInException {
