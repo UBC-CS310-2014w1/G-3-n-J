@@ -1,7 +1,6 @@
 package com.google.gwt.parkfinder.client;
 
 import java.util.List;
-
 import com.google.gwt.maps.client.InfoWindowContent;
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.Maps;
@@ -24,7 +23,6 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -35,24 +33,25 @@ import com.google.gwt.dom.client.Style.Unit;
 /**
  * Entry point classes define onModuleLoad()
  */
-
 public class ParkFinder implements EntryPoint {
 	public MapWidget map;
-	// public final LatLng mapCenter = LatLng.newInstance(49.240902,
-	// -123.155935);
-
+	// public final LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
+	
 	private HorizontalPanel mapPanel = new HorizontalPanel();
 	private TabPanel tabPanel = new TabPanel();
-	private VerticalPanel favouritesTabPanel = new VerticalPanel();
 	private VerticalPanel searchTabPanel = new VerticalPanel();
-	private Button adminButton;
+	private VerticalPanel favouritesTabPanel = new VerticalPanel();
+	private DialogBox adminBox = new DialogBox();
+	private Button adminButton = new Button();
+	
+	private int sampleNumber = 16;
+	private Grid dataGrid = new Grid(sampleNumber + 1, 3);
 
-	private LoginInfo loginInfo = null;
 	private VerticalPanel loginPanel = new VerticalPanel();
-	private Label loginLabel = new Label(
-			"Please sign in to your Google Account to access the ParkFinder application.");
+	private Label loginLabel = new Label("Please sign in to your Google Account to access the ParkFinder application.");
 	private Anchor signInLink = new Anchor("Sign In");
 	private Anchor signOutLink = new Anchor("Sign Out");
+	private LoginInfo loginInfo = null;
 
 	private final ParkServiceAsync parkService = GWT.create(ParkService.class);
 
@@ -96,7 +95,7 @@ public class ParkFinder implements EntryPoint {
 		 * 
 		 * The first parameter should be a valid Maps API Key to deploy this
 		 * application on a public server, but a blank key will work for an
-		 * application served from localhost.
+		 * application served from local host.
 		 */
 		Maps.loadMapsApi("", "2", false, new Runnable() {
 			public void run() {
@@ -121,13 +120,10 @@ public class ParkFinder implements EntryPoint {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				DialogBox adminBox = new DialogBox();
-				// Grid parsedDataGridDisplay = new Grid(2, 10);
 
 				adminBox.setText("Admin Panel");
 
-				Button startParseButton = new Button("Parse data",
-						new ClickHandler() {
+				Button startParseButton = new Button("Parse data", new ClickHandler() {
 
 							@Override
 							public void onClick(ClickEvent event) {
@@ -136,43 +132,55 @@ public class ParkFinder implements EntryPoint {
 						});
 
 				adminBox.add(startParseButton);
-				// adminBox.add(parsedDataGridDisplay);
 				adminBox.center();
 				adminBox.setAutoHideEnabled(true);
 				adminBox.show();
 			}
-
 		});
 	}
 
 	private void loadParks() {
 		parkService.storeParkList(new AsyncCallback<Void>() {
 			public void onFailure(Throwable error) {
+				System.out.println("Failed to store data.");
 			}
 
 			public void onSuccess(Void ignore) {
-				// display parks
-				// call parkService.getParkList() to return list of parks
-				getParkList();
+				System.out.println("storeParkList() ran successfully");
+				displayParks();
 			}
 		});
 	}
-	
-	private void getParkList() {
+
+	private void displayParks() {
 		parkService.getParkList(new AsyncCallback<List<Park>>() {
 
 			@Override
-			public void onFailure(Throwable caught) {
-				// TODO Auto-generated method stub
-				
+			public void onFailure(Throwable error) {
+				System.out.println("Failed to get data.");
 			}
 
 			@Override
-			public void onSuccess(List<Park> result) {
-				// TODO Auto-generated method stub
+			public void onSuccess(List<Park> parks) {
+				System.out.println("getParkList() ran successfully");
+
+				dataGrid.setText(0, 0, "ID");
+				dataGrid.setText(0, 1, "Name");
+				dataGrid.setText(0, 2, "Address");
 				
+				int i = 0;
+				
+				while (parks.get(i) != null && i < sampleNumber) {
+					String parkID = parks.get(i).getParkID();
+					String parkName = parks.get(i).getName();
+					String parkAddress = parks.get(i).getStreetNumber() + " " + parks.get(i).getStreetName();
+					dataGrid.setText(i+1, 0, parkID);
+					dataGrid.setText(i+1, 1, parkName);
+					dataGrid.setText(i+1, 2, parkAddress);
+					i++;
+				}
+				adminBox.setWidget(dataGrid);
 			}
-			
 		});
 	}
 
@@ -221,7 +229,6 @@ public class ParkFinder implements EntryPoint {
 						message.center();
 						message.show();
 					}
-
 				});
 
 		searchTabPanel.add(searchButton);

@@ -35,6 +35,7 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 	@Override
 	public void storeParkList() throws IOException, NotLoggedInException {
 		checkLoggedIn();
+		PersistenceManager pm = getPersistenceManager();
 
 		URL PARK_CSV = new URL("http://m.uploadedit.com/b041/1414532771299.txt");
 		BufferedReader in = new BufferedReader(new InputStreamReader(PARK_CSV.openStream()));
@@ -56,25 +57,23 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 			park.setNeighbourhoodName(nextLine[9]);
 			park.setNeighbourhoodURL(nextLine[10]);
 			parkList.add(park);
-			System.out.println(park.getName());
 		}
 		
-		PersistenceManager pm = getPersistenceManager();
+		/*
 		try {
 			pm.makePersistent(parkList);
 		} finally {
 			pm.close();
 		}
-		
+		*/ 
 		reader.close();
 		
-		// call getParkList() to return parkList
-		getParkList();
+		System.out.println("Successfully called storeParkList()");
 	  }
 	
 	@Override
-	public List<Park> getParkList() throws IOException, NotLoggedInException {
-		checkLoggedIn();
+	public List<Park> getParkList() throws NotLoggedInException {
+		System.out.println("Successfully called getParkList()");
 		return parkList;
 	}
 

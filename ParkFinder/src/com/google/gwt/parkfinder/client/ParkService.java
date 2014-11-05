@@ -14,7 +14,7 @@ public interface ParkService extends RemoteService {
 	public void storeParkList() throws IOException, NotLoggedInException;
 	
 	// Return the stored list of parks
-	public List<Park> getParkList() throws IOException, NotLoggedInException;
+	public List<Park> getParkList() throws NotLoggedInException;
 
 	// Return a single park by inputing the ParkID
 	// Used for query
