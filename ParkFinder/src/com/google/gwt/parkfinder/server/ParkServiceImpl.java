@@ -84,7 +84,7 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 
 	@Override
 	public Park getParkInfo(String id) throws NotLoggedInException {
-		// checkLoggedIn();
+		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
 		List<Park> listOfPark = new ArrayList<Park>();
 		try {
@@ -102,7 +102,7 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 
 	@Override
 	public List<Park> searchName(String name) throws NotLoggedInException {
-		// checkLoggedIn();
+		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
 		List<Park> listOfPark = new ArrayList<Park>();
 		try {

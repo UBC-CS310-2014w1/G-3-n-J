@@ -270,7 +270,7 @@ public class ParkFinder implements EntryPoint {
 			return;
 		}
 		*/
-
+		
 		nameField.setText("");
 
 		parkService.searchName(symbol, new AsyncCallback<List<Park>>() {
