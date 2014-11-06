@@ -1,5 +1,6 @@
 package com.google.gwt.parkfinder.client;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.maps.client.InfoWindowContent;
@@ -220,24 +221,40 @@ public class ParkFinder implements EntryPoint {
 				
 				int sampleNumber = 10;
 				
-				Grid dataGrid = new Grid(sampleNumber + 1, 2);
-				dataGrid.setText(0, 0, "Name");
-				dataGrid.setText(0, 1, "Address");
-				
-				int i = 0;
-				
-				while (parks.get(i) != null && i < sampleNumber) {
-					String parkName = parks.get(i).getName();
-					String parkAddress = parks.get(i).getStreetNumber() + " " + parks.get(i).getStreetName();
-					dataGrid.setText(i+1, 0, parkName);
-					dataGrid.setText(i+1, 1, parkAddress);
-					i++;
-				}
+				Grid dataGrid = parkGrid(parks, sampleNumber);
 				
 				adminPanel.add(databaseSize);
 				adminPanel.add(dataGrid);
 			}
 		});
+	}
+	
+	private Grid parkGrid(List<Park> parks, int length) {
+		List<Park> output = new ArrayList<Park>();
+		int i;
+		for (i = 0; i <= length; i++) {
+			output.add(parks.get(i));
+		}
+		return parkGrid(output);
+	}
+	
+	private Grid parkGrid(List<Park> parks) {
+		int length = parks.size();
+		Grid dataGrid = new Grid(length + 1, 2);
+		
+		dataGrid.setText(0, 0, "Name");
+		dataGrid.setText(0, 1, "Address");
+		
+		int i = 1;
+		for (Park park: parks) {
+			String parkName = park.getName();
+			String parkAddress = park.getStreetNumber() + " " + park.getStreetName();
+			dataGrid.setText(i, 0, parkName);
+			dataGrid.setText(i, 1, parkAddress);
+			i++;
+		}
+		
+		return dataGrid;
 	}
 
 	private void initTabs() {
