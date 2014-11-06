@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -29,8 +28,6 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 
 	private static final Logger LOG = Logger.getLogger(ParkServiceImpl.class.getName());
 	private static final PersistenceManagerFactory PMF = JDOHelper.getPersistenceManagerFactory("transactions-optional");
-
-	public List<Park> parkList = new LinkedList<Park>();
 	
 	@Override
 	public void storeParkList() throws IOException, NotLoggedInException {
@@ -91,14 +88,10 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			if (parkList.isEmpty())
-				return null;
-			for (int index = 0; index <= parkList.size(); index++) {
-				Park park = parkList.get(index);
-				if (park.getParkID() == id)
-					return park;
-			}
-			return null;
+			Query q = pm.newQuery(Park.class, "ParkID == id");
+			q.declareParameters(id);
+			Park park = (Park) q.execute(id);
+			return park;
 		} finally {
 			pm.close();
 		}
@@ -108,14 +101,13 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 	public List<Park> searchName(String name) throws NotLoggedInException {
 		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
+		List<Park> nameMatched = new ArrayList<Park>();
 		try {
-			if (parkList.isEmpty())
-				return null;
-			List<Park> nameMatched = new ArrayList<Park>();
-			for (int index = 0; index <= parkList.size(); index++) {
-				Park park = parkList.get(index);
-				if (park.getName().contains(name))
-					nameMatched.add(park);
+		      Query q = pm.newQuery(Park.class, "Name == name");
+		      q.declareParameters(name);
+		      List<Park> parks = (List<Park>) q.execute();
+		      for (Park park : parks) {
+		        nameMatched.add(park);
 			}
 			return nameMatched;
 		} finally {
@@ -137,5 +129,4 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 	private PersistenceManager getPersistenceManager() {
 		return PMF.getPersistenceManager();
 	}
-
 }

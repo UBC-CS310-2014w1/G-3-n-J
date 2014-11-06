@@ -17,6 +17,8 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
@@ -55,6 +57,10 @@ public class ParkFinder implements EntryPoint {
 	private Label loginLabel = new Label("Please sign in to your Google Account to access the ParkFinder application.");
 	private Anchor signInLink = new Anchor("Sign In");
 	private Anchor signOutLink = new Anchor("Sign Out");
+	
+	HorizontalPanel searchNamePanel = new HorizontalPanel();
+	final TextBox nameField = new TextBox();
+	Button searchName = new Button("Search");
 
 	private final ParkServiceAsync parkService = GWT.create(ParkService.class);
 
@@ -123,7 +129,7 @@ public class ParkFinder implements EntryPoint {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				adminBox.setText("Admin Panel");
+				adminBox.setText("Administrator Panel");
 				Button parseButton = new Button("Parse Data", new ClickHandler() {
 
 							@Override
@@ -153,11 +159,14 @@ public class ParkFinder implements EntryPoint {
 
 	private void loadParks() {
 		parkService.storeParkList(new AsyncCallback<Void>() {
+			
+			@Override
 			public void onFailure(Throwable error) {
 				Label parseFailed = new Label("Error: Failed to Parse Data"); 
 				adminPanel.add(parseFailed);
 			}
 
+			@Override
 			public void onSuccess(Void ignore) {
 				Label parseSuccess = new Label("Data Successfully Parsed into Database");
 				adminPanel.add(parseSuccess);
@@ -167,7 +176,6 @@ public class ParkFinder implements EntryPoint {
 
 	private void displayParks() {
 		parkService.getParkList(new AsyncCallback<List<Park>>() {
-			
 
 			@Override
 			public void onFailure(Throwable error) {
@@ -182,20 +190,17 @@ public class ParkFinder implements EntryPoint {
 				
 				int sampleNumber = 10;
 				
-				Grid dataGrid = new Grid(sampleNumber + 1, 3);
-				dataGrid.setText(0, 0, "ID");
-				dataGrid.setText(0, 1, "Name");
-				dataGrid.setText(0, 2, "Address");
+				Grid dataGrid = new Grid(sampleNumber + 1, 2);
+				dataGrid.setText(0, 0, "Name");
+				dataGrid.setText(0, 1, "Address");
 				
 				int i = 0;
 				
 				while (parks.get(i) != null && i < sampleNumber) {
-					String parkID = parks.get(i).getParkID();
 					String parkName = parks.get(i).getName();
 					String parkAddress = parks.get(i).getStreetNumber() + " " + parks.get(i).getStreetName();
-					dataGrid.setText(i+1, 0, parkID);
-					dataGrid.setText(i+1, 1, parkName);
-					dataGrid.setText(i+1, 2, parkAddress);
+					dataGrid.setText(i+1, 0, parkName);
+					dataGrid.setText(i+1, 1, parkAddress);
 					i++;
 				}
 				
@@ -237,13 +242,69 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void initTabPanels() {
+		searchName();
 		loadSearchTabContent();
 		favouritesTabPanel.add(new Button("Favourites content here"));
 	}
 	
+	private void searchName() {
+		Label searchNameLabel = new Label("Search By Name");
+		searchTabPanel.add(searchNameLabel);
+		searchNamePanel.add(nameField);
+		searchNamePanel.add(searchName);
+		searchTabPanel.add(searchNamePanel);
+		
+		nameField.setFocus(true);
+		
+		searchName.addClickHandler(new ClickHandler() {
+		      public void onClick(ClickEvent event) {
+		        filterByName();
+		      }
+		});
+	}
+		
+	private void filterByName() {
+				String symbol = nameField.getText();
+				nameField.setFocus(true);
+				
+				if (!symbol.matches("^[a-z]{1,10}$")) {
+				      Window.alert("'" + symbol + "' is not a valid park name.");
+				      nameField.selectAll();
+				      return;
+				    }
+				
+				nameField.setText("");
+				
+				parkService.searchName(symbol, new AsyncCallback<List<Park>>() {
+
+						@Override
+						public void onFailure(Throwable error) {
+							Label searchFailed = new Label("Error: Failed to Search Name");
+							searchTabPanel.add(searchFailed);
+						}
+
+						@Override
+						public void onSuccess(List<Park> parks) {
+							Grid dataGrid = new Grid(2, 3);
+							dataGrid.setText(0, 0, "ID");
+							dataGrid.setText(0, 1, "Name");
+							dataGrid.setText(0, 2, "Address");
+
+							String parkID = parks.get(1).getParkID();
+							String parkName = parks.get(1).getName();
+							String parkAddress = parks.get(1).getStreetNumber() + " " + parks.get(1).getStreetName();
+							dataGrid.setText(1, 0, parkID);
+							dataGrid.setText(1, 1, parkName);
+							dataGrid.setText(1, 2, parkAddress);
+
+							searchTabPanel.add(dataGrid);
+							}
+				});
+	}
+				
+	
 	private void loadSearchTabContent() {
-		Button searchButton = new Button("Arbutus Ridge Park Page Preview",
-				new ClickHandler() {
+		Button testButton = new Button("Arbutus Ridge Park Page Preview", new ClickHandler() {
 
 					@Override
 					public void onClick(ClickEvent event) {
@@ -274,7 +335,7 @@ public class ParkFinder implements EntryPoint {
 						message.show();
 					}
 				});
-		searchTabPanel.add(searchButton);
+		searchTabPanel.add(testButton);
 	}
 	
 	private void buildParkPage(Park park, Panel panel) {
@@ -302,3 +363,4 @@ public class ParkFinder implements EntryPoint {
 		}
 	}
 }
+
