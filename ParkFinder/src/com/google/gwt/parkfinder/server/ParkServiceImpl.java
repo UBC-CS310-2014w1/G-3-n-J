@@ -3,6 +3,7 @@ package com.google.gwt.parkfinder.server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,22 +77,24 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 				listOfPark.add(park);
 			}
 			return listOfPark;
-
 		} finally {
 			pm.close();
 		}
 	}
 
-	
 	@Override
 	public Park getParkInfo(String id) throws NotLoggedInException {
-		checkLoggedIn();
+		// checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
+		List<Park> listOfPark = new ArrayList<Park>();
 		try {
-			Query q = pm.newQuery(Park.class, "ParkID == id");
-			q.declareParameters(id);
-			Park park = (Park) q.execute(id);
-			return park;
+			Query q = pm.newQuery(Park.class, "ParkID == idParam");
+			q.declareParameters("int idParam");
+			List<Park> parks = (List<Park>) q.execute(id);
+			for (Park park : parks) {
+				listOfPark.add(park);
+			}
+			return listOfPark.get(0);
 		} finally {
 			pm.close();
 		}
@@ -99,17 +102,17 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 
 	@Override
 	public List<Park> searchName(String name) throws NotLoggedInException {
-		checkLoggedIn();
+		// checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
-		List<Park> nameMatched = new ArrayList<Park>();
+		List<Park> listOfPark = new ArrayList<Park>();
 		try {
-		      Query q = pm.newQuery(Park.class, "Name == name");
-		      q.declareParameters(name);
-		      List<Park> parks = (List<Park>) q.execute();
-		      for (Park park : parks) {
-		        nameMatched.add(park);
+			Query q = pm.newQuery(Park.class, "Name == nameParam");
+			q.declareParameters("String nameParam");
+			List<Park> parks = (List<Park>) q.execute(name);
+			for (Park park : parks) {
+				listOfPark.add(park);
 			}
-			return nameMatched;
+			return listOfPark;
 		} finally {
 			pm.close();
 		}

@@ -17,8 +17,6 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
@@ -87,14 +85,6 @@ public class ParkFinder implements EntryPoint {
 				});
 	}
 
-	private void loadLogin() {
-		// Assemble login panel.
-		signInLink.setHref(loginInfo.getLoginUrl());
-		loginPanel.add(loginLabel);
-		loginPanel.add(signInLink);
-		RootPanel.get("signInOut").add(loginPanel);
-	}
-
 	private void loadParkFinder() {
 
 		signOutLink.setHref(loginInfo.getLogoutUrl());
@@ -121,7 +111,37 @@ public class ParkFinder implements EntryPoint {
 		RootPanel.get("signInOut").add(adminButton);
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
+	}
+	
+	private void loadLogin() {
+		// Assemble login panel.
+		signInLink.setHref(loginInfo.getLoginUrl());
+		loginPanel.add(loginLabel);
+		loginPanel.add(signInLink);
+		RootPanel.get("signInOut").add(loginPanel);
+	}
+	
+	private void buildMapUi() {
+		LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
 
+		map = new MapWidget(mapCenter, 12);
+		map.setSize("100%", "100%");
+
+		// Add some controls for the zoom level
+		map.addControl(new LargeMapControl());
+
+		// Add a marker
+		map.addOverlay(new Marker(mapCenter));
+
+		// Add an info window to highlight a point of interest
+		map.getInfoWindow().open(map.getCenter(),
+				new InfoWindowContent("Ravine Park"));
+
+		final DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
+		dock.addNorth(map, 500);
+
+		// Add the map to the HTML host page
+		RootPanel.get("mapPanel").add(dock);
 	}
 
 	private void initAdmin() {
@@ -210,99 +230,82 @@ public class ParkFinder implements EntryPoint {
 		});
 	}
 
-	private void buildMapUi() {
-		LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
-
-		map = new MapWidget(mapCenter, 12);
-		map.setSize("100%", "100%");
-
-		// Add some controls for the zoom level
-		map.addControl(new LargeMapControl());
-
-		// Add a marker
-		map.addOverlay(new Marker(mapCenter));
-
-		// Add an info window to highlight a point of interest
-		map.getInfoWindow().open(map.getCenter(),
-				new InfoWindowContent("Ravine Park"));
-
-		final DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
-		dock.addNorth(map, 500);
-
-		// Add the map to the HTML host page
-		RootPanel.get("mapPanel").add(dock);
-	}
-
 	private void initTabs() {
 		tabPanel.setWidth("100%");
 		tabPanel.add(searchTabPanel, "Search");
 		tabPanel.add(favouritesTabPanel, "Favourites");
 		tabPanel.selectTab(0);
-
 	}
 
 	private void initTabPanels() {
-		searchName();
+		searchByName();
 		loadSearchTabContent();
 		favouritesTabPanel.add(new Button("Favourites content here"));
 	}
 	
-	private void searchName() {
-		Label searchNameLabel = new Label("Search By Name");
+	private void searchByName() {
+		Label searchNameLabel = new Label("Search By Name:");
 		searchTabPanel.add(searchNameLabel);
 		searchNamePanel.add(nameField);
 		searchNamePanel.add(searchName);
 		searchTabPanel.add(searchNamePanel);
-		
+
 		nameField.setFocus(true);
-		
+
 		searchName.addClickHandler(new ClickHandler() {
-		      public void onClick(ClickEvent event) {
-		        filterByName();
-		      }
+			public void onClick(ClickEvent event) {
+				filterByName();
+			}
 		});
 	}
 		
 	private void filterByName() {
-				String symbol = nameField.getText();
-				nameField.setFocus(true);
-				
-				if (!symbol.matches("^[a-z]{1,10}$")) {
-				      Window.alert("'" + symbol + "' is not a valid park name.");
-				      nameField.selectAll();
-				      return;
-				    }
-				
-				nameField.setText("");
-				
-				parkService.searchName(symbol, new AsyncCallback<List<Park>>() {
+		String symbol = nameField.getText();
+		nameField.setFocus(true);
 
-						@Override
-						public void onFailure(Throwable error) {
-							Label searchFailed = new Label("Error: Failed to Search Name");
-							searchTabPanel.add(searchFailed);
-						}
+		/*
+		if (!symbol.matches("^[a-z]{1,10}$")) {
+			Window.alert("'" + symbol + "' is not a valid park name.");
+			nameField.selectAll();
+			return;
+		}
+		*/
 
-						@Override
-						public void onSuccess(List<Park> parks) {
-							Grid dataGrid = new Grid(2, 3);
-							dataGrid.setText(0, 0, "ID");
-							dataGrid.setText(0, 1, "Name");
-							dataGrid.setText(0, 2, "Address");
+		nameField.setText("");
 
-							String parkID = parks.get(1).getParkID();
-							String parkName = parks.get(1).getName();
-							String parkAddress = parks.get(1).getStreetNumber() + " " + parks.get(1).getStreetName();
-							dataGrid.setText(1, 0, parkID);
-							dataGrid.setText(1, 1, parkName);
-							dataGrid.setText(1, 2, parkAddress);
+		parkService.searchName(symbol, new AsyncCallback<List<Park>>() {
 
-							searchTabPanel.add(dataGrid);
-							}
-				});
+			@Override
+			public void onFailure(Throwable error) {
+				System.out.println("Faild to search for name");
+				Label searchFailed = new Label("Error: Failed to Search Name");
+				searchTabPanel.add(searchFailed);
+			}
+
+			@Override
+			public void onSuccess(List<Park> parks) {
+				if (parks.isEmpty()) {
+					Label searchEmpty = new Label("Name does not match with any park.");
+					searchTabPanel.add(searchEmpty);
+				} else {
+					Grid dataGrid = new Grid(2, 3);
+					dataGrid.setText(0, 0, "ID");
+					dataGrid.setText(0, 1, "Name");
+					dataGrid.setText(0, 2, "Address");
+
+					String parkID = parks.get(0).getParkID();
+					String parkName = parks.get(0).getName();
+					String parkAddress = parks.get(0).getStreetNumber() + " " + parks.get(0).getStreetName();
+					dataGrid.setText(1, 0, parkID);
+					dataGrid.setText(1, 1, parkName);
+					dataGrid.setText(1, 2, parkAddress);
+
+					searchTabPanel.add(dataGrid);
+				}
+			}
+		});
 	}
 				
-	
 	private void loadSearchTabContent() {
 		Button testButton = new Button("Arbutus Ridge Park Page Preview", new ClickHandler() {
 
@@ -327,7 +330,6 @@ public class ParkFinder implements EntryPoint {
 								message.setText(samplePark.getName());
 								buildParkPage(samplePark, msgPanel);
 							}
-							
 						});
 						
 						message.setAutoHideEnabled(true);
@@ -363,4 +365,3 @@ public class ParkFinder implements EntryPoint {
 		}
 	}
 }
-
