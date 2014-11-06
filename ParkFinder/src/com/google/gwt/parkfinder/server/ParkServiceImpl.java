@@ -1,4 +1,3 @@
-
 package com.google.gwt.parkfinder.server;
 
 import java.io.BufferedReader;
@@ -58,12 +57,10 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 				park.setGoogleMapDest(nextLine[7]);
 				park.setNeighbourhoodName(nextLine[9]);
 				park.setNeighbourhoodURL(nextLine[10]);
+
 				pm.makePersistent(park);
-				// parkList.add(park);
 			}
 			reader.close();
-
-			System.out.println("Successfully called storeParkList()");
 
 		} finally {
 			pm.close();
@@ -78,17 +75,14 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 		try {
 			Query q = pm.newQuery(Park.class);
 			List<Park> parks = (List<Park>) q.execute();
-		    q.setOrdering("ParkID");
 			for (Park park : parks) {
 				listOfPark.add(park);
 			}
-			System.out.println("Successfully called getParkList()");
 			return listOfPark;
 
 		} finally {
 			pm.close();
 		}
-		//return parkList;
 	}
 
 	

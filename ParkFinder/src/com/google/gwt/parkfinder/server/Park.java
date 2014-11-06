@@ -9,7 +9,6 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class Park implements Serializable {
 
@@ -32,7 +31,7 @@ public class Park implements Serializable {
 	private List<Facility> Facility;
 	@Persistent
 	private List<Washroom> Washroom;
-	
+
 	// Use when storing to database
 	public Park() {
 		// TODO Auto-generated constructor stub
@@ -49,7 +48,6 @@ public class Park implements Serializable {
 	public String getParkID() {
 		return ParkID;
 	}
-
 
 	public String getName() {
 		return Name;
