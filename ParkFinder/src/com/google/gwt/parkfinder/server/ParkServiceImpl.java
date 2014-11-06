@@ -37,8 +37,6 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 		try {
 
 			URL PARK_CSV = new URL("http://m.uploadedit.com/b041/1414532771299.txt");
-			URL FACILITIES_CSV = new URL("http://m.uploadedit.com/b042/1415280168943.txt");
-			URL WASHROOMS_CSV = new URL("http://m.uploadedit.com/b042/1415280351920.txt");
 			BufferedReader in = new BufferedReader(new InputStreamReader(PARK_CSV.openStream()));
 			CSVReader reader = new CSVReader(in);
 			// Skip header row
@@ -58,9 +56,10 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 				park.setNeighbourhoodName(nextLine[9]);
 				park.setNeighbourhoodURL(nextLine[10]);
 				park.setFacility(getFacility(park.getParkID()));
+				park.setWashroom(getWashroom(park.getParkID()));
 				System.out.println(park.getParkID());
 				System.out.println(park.getFacility());
-				//System.out.println(park.getFacility()[0].getFacilityType());
+				System.out.println(park.getWashroom());
 
 				pm.makePersistent(park);
 			}
@@ -71,8 +70,8 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 		}
 	}
 
-	public ArrayList<Facility> getFacility(String parkID) throws IOException {
-		List<Facility> facilities = new ArrayList<Facility>();
+	public List<String> getFacility(String parkID) throws IOException {
+		List<String> facilities = new ArrayList<String>();
 		URL FACILITIES_CSV = new URL("http://m.uploadedit.com/b042/1415280168943.txt");
 		BufferedReader inFacility = new BufferedReader(new InputStreamReader(FACILITIES_CSV.openStream()));
 		CSVReader readerFacility = new CSVReader(inFacility);
@@ -81,19 +80,30 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 		String[] nextLineFacility = null;
 		while ((nextLineFacility = readerFacility.readNext()) != null) {
 			if (nextLineFacility[0].toString().equals(parkID.toString())) {
-				System.out.println(nextLineFacility[0].toString().equals(parkID.toString()));
-				System.out.println("Facility ID:" + nextLineFacility[0]);
-				System.out.println("ParkID:" + parkID);
-				Facility facility = new Facility();
-				facility.setFacilityCount(nextLineFacility[1]);
-				facility.setFacilityType(nextLineFacility[2]);
+				String facility = nextLineFacility[1] + " " + nextLineFacility[2];
 				facilities.add(facility);
-				System.out.println(facility.getFacilityCount() + ":" + facility.getFacilityType());
 			}
 		}
 		readerFacility.close();
-		System.out.println(facilities);
-		return (ArrayList<Facility>) facilities;
+		return facilities;
+	}
+	
+	public List<String> getWashroom(String parkID) throws IOException {
+		List<String> washrooms = new ArrayList<String>();
+		URL WASHROOMS_CSV = new URL("http://m.uploadedit.com/b042/1415280351920.txt");
+		BufferedReader inWashroom = new BufferedReader(new InputStreamReader(WASHROOMS_CSV.openStream()));
+		CSVReader readerWashroom = new CSVReader(inWashroom);
+		// Skip header row
+		readerWashroom.readNext();
+		String[] nextLineWashroom = null;
+		while ((nextLineWashroom = readerWashroom.readNext()) != null) {
+			if (nextLineWashroom[0].toString().equals(parkID.toString())) {
+				String washroom = "Location: " + nextLineWashroom[1] + ", Notes: " + nextLineWashroom[2] + ", SummerHours: " + nextLineWashroom[3] + ", WinterHours " + nextLineWashroom[4];
+				washrooms.add(washroom);
+			}
+		}
+		readerWashroom.close();
+		return washrooms;
 	}
 
 	@Override
