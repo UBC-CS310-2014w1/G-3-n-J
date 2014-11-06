@@ -108,9 +108,19 @@ public class ParkFinder implements EntryPoint {
 
 		RootPanel.get("signInOut").add(signOutLink);
 		// Adding admin button to signOutLink div temporarily
+		// manually enter names of admins!!
+		if ((loginInfo.getNickname().equals("grrraham"))||
+				(loginInfo.getNickname().equals("acie.liang"))||
+				(loginInfo.getNickname().equals("shineoutloudlol"))||
+				(loginInfo.getNickname().equals("joshparkes24"))){
 		RootPanel.get("signInOut").add(adminButton);
+		}
+		
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
+//		String ASDF = loginInfo.getNickname();
+//		Button debugPanel = new Button(ASDF);
+//		RootPanel.get("signInOut").add(debugPanel);
 	}
 	
 	private void loadLogin() {
