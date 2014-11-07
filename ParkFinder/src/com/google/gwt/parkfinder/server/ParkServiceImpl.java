@@ -56,7 +56,7 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 				park.setNeighbourhoodName(nextLine[9]);
 				park.setNeighbourhoodURL(nextLine[10]);
 				park.setFacility(getFacility(park.getParkID()));
-				park.setWashroom(getWashroom(park.getParkID()));
+				//park.setWashroom(getWashroom(park.getParkID()));
 				System.out.println(park.getParkID());
 				System.out.println(park.getFacility());
 				System.out.println(park.getWashroom());
@@ -70,40 +70,39 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 		}
 	}
 
-	public List<String> getFacility(String parkID) throws IOException {
-		List<String> facilities = new ArrayList<String>();
+	public String getFacility(String parkID) throws IOException {
 		URL FACILITIES_CSV = new URL("http://m.uploadedit.com/b042/1415280168943.txt");
 		BufferedReader inFacility = new BufferedReader(new InputStreamReader(FACILITIES_CSV.openStream()));
 		CSVReader readerFacility = new CSVReader(inFacility);
 		// Skip header row
 		readerFacility.readNext();
 		String[] nextLineFacility = null;
+		String facility = "";
 		while ((nextLineFacility = readerFacility.readNext()) != null) {
 			if (nextLineFacility[0].toString().equals(parkID.toString())) {
-				String facility = nextLineFacility[1] + " " + nextLineFacility[2];
-				facilities.add(facility);
+				facility = facility + nextLineFacility[1] + " " + nextLineFacility[2] + ", ";
 			}
 		}
 		readerFacility.close();
-		return facilities;
+		return facility;
 	}
 	
-	public List<String> getWashroom(String parkID) throws IOException {
-		List<String> washrooms = new ArrayList<String>();
+	public String getWashroom(String parkID) throws IOException {
 		URL WASHROOMS_CSV = new URL("http://m.uploadedit.com/b042/1415280351920.txt");
 		BufferedReader inWashroom = new BufferedReader(new InputStreamReader(WASHROOMS_CSV.openStream()));
 		CSVReader readerWashroom = new CSVReader(inWashroom);
 		// Skip header row
 		readerWashroom.readNext();
 		String[] nextLineWashroom = null;
+		String washroom = "";
 		while ((nextLineWashroom = readerWashroom.readNext()) != null) {
 			if (nextLineWashroom[0].toString().equals(parkID.toString())) {
-				String washroom = "Location: " + nextLineWashroom[1] + ", Notes: " + nextLineWashroom[2] + ", SummerHours: " + nextLineWashroom[3] + ", WinterHours " + nextLineWashroom[4];
-				washrooms.add(washroom);
+				washroom = washroom + "LOCATION: " + nextLineWashroom[1] + ", NOTES: " + nextLineWashroom[2] + 
+						", SUMMERHOURS: " + nextLineWashroom[3] + ", WINTERHOURS: " + nextLineWashroom[4] + ", ";
 			}
 		}
 		readerWashroom.close();
-		return washrooms;
+		return washroom;
 	}
 
 	@Override
