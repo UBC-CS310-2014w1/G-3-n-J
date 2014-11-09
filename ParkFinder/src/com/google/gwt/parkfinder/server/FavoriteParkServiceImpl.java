@@ -18,19 +18,16 @@ import com.google.gwt.parkfinder.client.ParkService;
 import com.google.gwt.parkfinder.client.NotLoggedInException;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-public class FavoriteParkServiceImpl extends RemoteServiceServlet implements
-		FavoriteParkService {
+public class FavoriteParkServiceImpl extends RemoteServiceServlet implements FavoriteParkService {
 
-	private static final Logger LOG = Logger
-			.getLogger(FavoriteParkServiceImpl.class.getName());
-	private static final PersistenceManagerFactory PMF = JDOHelper
-			.getPersistenceManagerFactory("transactions-optional");
+	private static final Logger LOG = Logger.getLogger(FavoriteParkServiceImpl.class.getName());
+	private static final PersistenceManagerFactory PMF = JDOHelper.getPersistenceManagerFactory("transactions-optional");
 
 	public void addPark(String id) throws NotLoggedInException {
 		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			pm.makePersistent(new Park(id));
+			pm.makePersistent(id);
 		} finally {
 			pm.close();
 		}
@@ -50,9 +47,7 @@ public class FavoriteParkServiceImpl extends RemoteServiceServlet implements
 					pm.deletePersistent(park);
 				}
 			}
-			if (deleteCount != 1) {
-				LOG.log(Level.WARNING, "removePark deleted " + deleteCount
-						+ " Parks");
+			if (deleteCount != 1) {LOG.log(Level.WARNING, "removePark deleted " + deleteCount + " Parks");
 			}
 		} finally {
 			pm.close();
@@ -91,5 +86,4 @@ public class FavoriteParkServiceImpl extends RemoteServiceServlet implements
 	private PersistenceManager getPersistenceManager() {
 		return PMF.getPersistenceManager();
 	}
-
 }
