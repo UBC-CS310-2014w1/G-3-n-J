@@ -28,9 +28,9 @@ public class Park implements Serializable {
 	@Persistent
 	private String NeighbourhoodURL;
 	@Persistent
-	private List<Facility> Facility;
+	private String Facility;
 	@Persistent
-	private List<Washroom> Washroom;
+	private String Washroom;
 
 	// Use when storing to database
 	public Park() {
@@ -73,11 +73,11 @@ public class Park implements Serializable {
 		return NeighbourhoodURL;
 	}
 
-	public List<Facility> getFacility() {
+	public String getFacility() {
 		return Facility;
 	}
 
-	public List<Washroom> getWashroom() {
+	public String getWashroom() {
 		return Washroom;
 	}
 
@@ -109,11 +109,11 @@ public class Park implements Serializable {
 		NeighbourhoodURL = neighbourhoodURL;
 	}
 
-	public void setFacility(ArrayList<Facility> facility) {
+	public void setFacility(String facility) {
 		Facility = facility;
 	}
 
-	public void setWashroom(ArrayList<Washroom> washroom) {
+	public void setWashroom(String washroom) {
 		Washroom = washroom;
 	}
 }

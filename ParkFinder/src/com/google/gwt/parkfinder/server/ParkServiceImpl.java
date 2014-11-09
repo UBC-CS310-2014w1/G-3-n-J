@@ -39,13 +39,13 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 			URL PARK_CSV = new URL("http://m.uploadedit.com/b041/1414532771299.txt");
 			BufferedReader in = new BufferedReader(new InputStreamReader(PARK_CSV.openStream()));
 			CSVReader reader = new CSVReader(in);
+			// Skip header row
 			reader.readNext();
 
 			// Clear the old list of park
 			pm.evictAll();
 
 			String[] nextLine = null;
-			// skip header row
 			while ((nextLine = reader.readNext()) != null) {
 				Park park = new Park();
 				park.setParkID(nextLine[0]);
@@ -55,6 +55,11 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 				park.setGoogleMapDest(nextLine[7]);
 				park.setNeighbourhoodName(nextLine[9]);
 				park.setNeighbourhoodURL(nextLine[10]);
+				park.setFacility(getFacility(park.getParkID()));
+				//park.setWashroom(getWashroom(park.getParkID()));
+				System.out.println(park.getParkID());
+				System.out.println(park.getFacility());
+				System.out.println(park.getWashroom());
 
 				pm.makePersistent(park);
 			}
@@ -63,6 +68,41 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 		} finally {
 			pm.close();
 		}
+	}
+
+	public String getFacility(String parkID) throws IOException {
+		URL FACILITIES_CSV = new URL("http://m.uploadedit.com/b042/1415280168943.txt");
+		BufferedReader inFacility = new BufferedReader(new InputStreamReader(FACILITIES_CSV.openStream()));
+		CSVReader readerFacility = new CSVReader(inFacility);
+		// Skip header row
+		readerFacility.readNext();
+		String[] nextLineFacility = null;
+		String facility = "";
+		while ((nextLineFacility = readerFacility.readNext()) != null) {
+			if (nextLineFacility[0].toString().equals(parkID.toString())) {
+				facility = facility + nextLineFacility[1] + " " + nextLineFacility[2] + ", ";
+			}
+		}
+		readerFacility.close();
+		return facility;
+	}
+	
+	public String getWashroom(String parkID) throws IOException {
+		URL WASHROOMS_CSV = new URL("http://m.uploadedit.com/b042/1415280351920.txt");
+		BufferedReader inWashroom = new BufferedReader(new InputStreamReader(WASHROOMS_CSV.openStream()));
+		CSVReader readerWashroom = new CSVReader(inWashroom);
+		// Skip header row
+		readerWashroom.readNext();
+		String[] nextLineWashroom = null;
+		String washroom = "";
+		while ((nextLineWashroom = readerWashroom.readNext()) != null) {
+			if (nextLineWashroom[0].toString().equals(parkID.toString())) {
+				washroom = washroom + "LOCATION: " + nextLineWashroom[1] + ", NOTES: " + nextLineWashroom[2] + 
+						", SUMMERHOURS: " + nextLineWashroom[3] + ", WINTERHOURS: " + nextLineWashroom[4] + ", ";
+			}
+		}
+		readerWashroom.close();
+		return washroom;
 	}
 
 	@Override
