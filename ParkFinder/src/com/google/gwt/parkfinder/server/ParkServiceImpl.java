@@ -3,8 +3,9 @@ package com.google.gwt.parkfinder.server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Serializable;
+
 import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -17,10 +18,10 @@ import javax.jdo.Query;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+
 import com.google.gwt.parkfinder.server.Park;
 import com.google.gwt.parkfinder.client.ParkService;
 import com.google.gwt.parkfinder.client.NotLoggedInException;
-import com.google.gwt.parkfinder.server.ParkServiceImpl;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -29,13 +30,12 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 
 	private static final Logger LOG = Logger.getLogger(ParkServiceImpl.class.getName());
 	private static final PersistenceManagerFactory PMF = JDOHelper.getPersistenceManagerFactory("transactions-optional");
-	
+
 	@Override
 	public void storeParkList() throws IOException, NotLoggedInException {
 		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
 		try {
-
 			URL PARK_CSV = new URL("http://m.uploadedit.com/b041/1414532771299.txt");
 			BufferedReader in = new BufferedReader(new InputStreamReader(PARK_CSV.openStream()));
 			CSVReader reader = new CSVReader(in);
@@ -56,15 +56,15 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 				park.setNeighbourhoodName(nextLine[9]);
 				park.setNeighbourhoodURL(nextLine[10]);
 				park.setFacility(getFacility(park.getParkID()));
-				//park.setWashroom(getWashroom(park.getParkID()));
-				System.out.println(park.getParkID());
-				System.out.println(park.getFacility());
-				System.out.println(park.getWashroom());
-
+				// park.setWashroom(getWashroom(park.getParkID()));
+				/**
+				 * System.out.println(park.getParkID());
+				 * System.out.println(park.getFacility());
+				 * System.out.println(park.getWashroom());
+				 */
 				pm.makePersistent(park);
 			}
 			reader.close();
-
 		} finally {
 			pm.close();
 		}
@@ -86,7 +86,7 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 		readerFacility.close();
 		return facility;
 	}
-	
+
 	public String getWashroom(String parkID) throws IOException {
 		URL WASHROOMS_CSV = new URL("http://m.uploadedit.com/b042/1415280351920.txt");
 		BufferedReader inWashroom = new BufferedReader(new InputStreamReader(WASHROOMS_CSV.openStream()));
@@ -97,8 +97,8 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 		String washroom = "";
 		while ((nextLineWashroom = readerWashroom.readNext()) != null) {
 			if (nextLineWashroom[0].toString().equals(parkID.toString())) {
-				washroom = washroom + "LOCATION: " + nextLineWashroom[1] + ", NOTES: " + nextLineWashroom[2] + 
-						", SUMMERHOURS: " + nextLineWashroom[3] + ", WINTERHOURS: " + nextLineWashroom[4] + ", ";
+				washroom = washroom + "LOCATION: " + nextLineWashroom[1] + ", NOTES: " + nextLineWashroom[2] 
+						+ ", SUMMERHOURS: " + nextLineWashroom[3] + ", WINTERHOURS: " + nextLineWashroom[4] + ", ";
 			}
 		}
 		readerWashroom.close();

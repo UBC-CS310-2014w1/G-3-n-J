@@ -1,8 +1,6 @@
 package com.google.gwt.parkfinder.server;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
@@ -32,18 +30,9 @@ public class Park implements Serializable {
 	@Persistent
 	private String Washroom;
 
-	// Use when storing to database
 	public Park() {
 		// TODO Auto-generated constructor stub
 	}
-
-	// Use when adding to favorite
-	public Park(String parkID) {
-		this();
-		this.ParkID = parkID;
-	}
-
-	// Auto-generated getters and setters
 
 	public String getParkID() {
 		return ParkID;

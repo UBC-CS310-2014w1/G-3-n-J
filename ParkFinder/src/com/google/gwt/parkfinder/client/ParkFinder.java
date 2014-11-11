@@ -10,9 +10,13 @@ import com.google.gwt.maps.client.control.LargeMapControl;
 import com.google.gwt.maps.client.geom.LatLng;
 import com.google.gwt.maps.client.overlay.Marker;
 import com.google.gwt.parkfinder.client.LoginInfo;
+import com.google.gwt.parkfinder.client.NotLoggedInException;
 import com.google.gwt.parkfinder.client.LoginService;
 import com.google.gwt.parkfinder.client.LoginServiceAsync;
-import com.google.gwt.parkfinder.client.NotLoggedInException;
+import com.google.gwt.parkfinder.client.ParkService;
+import com.google.gwt.parkfinder.client.ParkServiceAsync;
+import com.google.gwt.parkfinder.client.FavoriteParkService;
+import com.google.gwt.parkfinder.client.FavoriteParkServiceAsync;
 import com.google.gwt.parkfinder.server.Park;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -62,7 +66,7 @@ public class ParkFinder implements EntryPoint {
 	Button searchName = new Button("Search");
 
 	private final ParkServiceAsync parkService = GWT.create(ParkService.class);
-	private final FavoriteParkServiceAsync favoriteParkService = GWT.create(ParkService.class);
+	private final FavoriteParkServiceAsync favoriteParkService = GWT.create(FavoriteParkService.class);
 
 	/**
 	 * This is the entry point method.
@@ -110,12 +114,15 @@ public class ParkFinder implements EntryPoint {
 		RootPanel.get("signInOut").add(signOutLink);
 		// Adding admin button to signOutLink div temporarily
 		// manually enter names of admins!!
+		/** temporarily disable the admin-only feature
 		if ((loginInfo.getNickname().equals("grrraham"))||
 				(loginInfo.getNickname().equals("acie.liang"))||
 				(loginInfo.getNickname().equals("shineoutloudlol"))||
 				(loginInfo.getNickname().equals("joshparkes24"))){
 		RootPanel.get("signInOut").add(adminButton);
 		}
+		*/
+		RootPanel.get("signInOut").add(adminButton);
 		
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
@@ -230,37 +237,32 @@ public class ParkFinder implements EntryPoint {
 	}
 	
 	private Grid parkGrid(List<Park> parks, int length) {
-		System.out.println("1");
 		List<Park> output = new ArrayList<Park>();
 		int i;
-		for (i = 0; i <= length; i++) {
+		for (i = 0; i < length; i++) {
 			output.add(parks.get(i));
 		}
 		return parkGrid(output);
 	}
 	
 	private Grid parkGrid(List<Park> parks) {
-		System.out.println("2");
 		int length = parks.size();
+		if (length == 0) return null;
 		Grid dataGrid = new Grid(length + 1, 2);
 		
 		dataGrid.setText(0, 0, "Name");
 		dataGrid.setText(0, 1, "Address");
 		
-		int i = 1;
-		for (Park park: parks) {
-			String parkName = park.getName();
-			String parkAddress = park.getStreetNumber() + " " + park.getStreetName();
-			dataGrid.setText(i, 0, parkName);
-			dataGrid.setText(i, 1, parkAddress);
-			i++;
+		for(int i = 0; i < length; i++){
+			String parkName = parks.get(i).getName();
+			String parkAddress = parks.get(i).getStreetNumber() + " " + parks.get(i).getStreetName();
+			dataGrid.setText(i+1, 0, parkName);
+			dataGrid.setText(i+1, 1, parkAddress);
 		}
-		
 		return dataGrid;
 	}
 
 	private void initTabs() {
-		System.out.println("3");
 		tabPanel.setWidth("100%");
 		tabPanel.add(searchTabPanel, "Search");
 		tabPanel.add(favouritesTabPanel, "Favourites");
@@ -371,40 +373,47 @@ public class ParkFinder implements EntryPoint {
 	}
 	
 	private void loadFavoritesTabContent() {
-		System.out.println("4");
-		Label favoriteTab = new Label("Favorite Parks");
-		favouritesTabPanel.add(favoriteTab);
-		
 		favoriteParkService.getParks(new AsyncCallback<String[]>() {
-			
+
 			@Override
 			public void onFailure(Throwable error) {
-				Label getFavoritesFailed = new Label("Error: Failed to Get Favorite Parks"); 
-				favouritesTabPanel.add(getFavoritesFailed);
+				Label getParksFailed = new Label("Error: Failed to Get Favorite Parks");
+				favouritesTabPanel.add(getParksFailed);
 			}
 
 			@Override
-			public void onSuccess(String[] favorites) {
-				final List<Park> favoriteParks = new ArrayList<Park>();
-				for (String id: favorites) {
-					parkService.getParkInfo(id, new AsyncCallback<Park>() {
+			public void onSuccess(final String[] favorites) {
+				if (favorites.length == 0) {
+					Label noFavoritePark = new Label("You do not have any favorite park.");
+					favouritesTabPanel.add(noFavoritePark);
+				} else {
+					final List<Park> favoriteParks = new ArrayList<Park>();
+					parkService.getParkList(new AsyncCallback<List<Park>>() {
 
 						@Override
 						public void onFailure(Throwable caught) {
+							Label getParksInfoFailed = new Label("Error: Failed to Get Favorite Parks");
+							favouritesTabPanel.add(getParksInfoFailed);
 						}
 
 						@Override
-						public void onSuccess(Park park) {
-							favoriteParks.add(park);
+						public void onSuccess(List<Park> parks) {
+							for (String id : favorites) {
+								for (Park park : parks) {
+									if (id == park.getParkID())
+										favoriteParks.add(park);
+								}
+							}
+							Grid dataGrid = parkGrid(favoriteParks);
+							favouritesTabPanel.add(dataGrid);
 						}
 					});
 				}
-				favouritesTabPanel.add(parkGrid(favoriteParks, 10));
 			}
 		});
 	}
 	
-	private void buildParkPage(final Park park, Panel panel) {
+	private void buildParkPage(final Park park, final Panel panel) {
 		Image img = new Image();
 		img.setUrlAndVisibleRect("http://www.google.com/images/logo.gif", 0, 0, 276, 110);
 		
@@ -423,17 +432,20 @@ public class ParkFinder implements EntryPoint {
 		Button favoriteButton = new Button("Add to favorite", new ClickHandler() {
 
 			@Override
-			public void onClick(ClickEvent event) {				
-				favoriteParkService.addPark(park.getParkID(), new AsyncCallback<Void>() {
+			public void onClick(ClickEvent event) {	
+				String parkID = park.getParkID();
+				favoriteParkService.addPark(parkID, new AsyncCallback<Void>() {
 
 					@Override
 					public void onFailure(Throwable caught) {
-						System.out.println("Error: failed to add to Favorites");
+						Label addFavoritesFailed = new Label("Error: failed to add to Favorites");
+						panel.add(addFavoritesFailed);
 					}
 
 					@Override
 					public void onSuccess(Void result) {
-						System.out.println("Successfully added to Favorites");
+						Label addFavoritesSuccess = new Label("Successfully added to Favorites");
+						panel.add(addFavoritesSuccess);
 					}
 				});
 			}
