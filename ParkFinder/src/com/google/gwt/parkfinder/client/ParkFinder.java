@@ -250,7 +250,7 @@ public class ParkFinder implements EntryPoint {
 				
 	private void loadSearchTabContent() {
 		searchByName();
-		// searchByAddress();
+		searchByAddress();
 	}
 
 	private void searchByName() {
@@ -270,14 +270,11 @@ public class ParkFinder implements EntryPoint {
 				final String symbol = nameField.getText();
 				nameField.setFocus(true);
 
-				// TODO: look up regular expression 
-				/** 
-				 * if (!symbol.matches("^[a-z]{1,10}$")) { 
-				 * Window.alert("'" + symbol + "' is not a valid park name.");
-				 * nameField.selectAll(); 
-				 * return; 
-				 * }
-				 */
+				if (!symbol.matches("^[a-zA-Z]{1,10}$")) {
+					Window.alert("'" + symbol + "' is not a valid park name.");
+					nameField.selectAll();
+					return;
+				}
 
 				nameField.setText("");
 
@@ -306,6 +303,77 @@ public class ParkFinder implements EntryPoint {
 						}
 					}
 				});
+			}
+		});
+	}
+	
+	private void searchByAddress() {
+		Label searchAddressLabel = new Label("Search By Address:");
+		HorizontalPanel searchAddressPanel = new HorizontalPanel();
+		searchTabPanel.add(searchAddressLabel);
+		final TextBox addressField = new TextBox();
+		Button searchAddress = new Button("Search");
+		searchAddressPanel.add(addressField);
+		searchAddressPanel.add(searchAddress);
+		searchTabPanel.add(searchAddressPanel);
+
+		addressField.setFocus(true);
+
+		searchAddress.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				final String symbol = addressField.getText();
+				addressField.setFocus(true);
+
+				int length = symbol.length();
+				int i = 0;
+				while (symbol.charAt(i) != ' ' && i+1 < length) {
+					i++;
+				}
+				if (i+1 >= length) {
+					Window.alert("'" + symbol + "' is not a valid address.");
+				} else {
+					final String house = symbol.substring(0, i);
+					final String street = symbol.substring(i + 1, length);
+
+					parkService.getParkList(new AsyncCallback<List<Park>>() {
+
+						@Override
+						public void onFailure(Throwable caught) {
+							Label getParksInfoFailed = new Label("Error: Failed to Retrieve Parks Information");
+							searchTabPanel.add(getParksInfoFailed);
+						}
+
+						@Override
+						public void onSuccess(List<Park> parks) {
+							List<Park> addressMatched = new ArrayList<Park>();
+							for (Park park : parks) {
+								if (park.getStreetName().toLowerCase().contains(street.toLowerCase())) {
+									addressMatched.add(park);
+								}
+							}
+							if (addressMatched.isEmpty()) {
+								Label noMatchingPark = new Label("There are no park with that address.");
+								searchTabPanel.add(noMatchingPark);
+							} else {
+								int i = 0;
+								List<Park> singleMatch = new ArrayList<Park>();
+								while (singleMatch.isEmpty()&& i < addressMatched.size()) {
+									if (house.equals(addressMatched.get(i).getStreetNumber())) {
+										singleMatch.add(addressMatched.get(i));
+										searchTabPanel.add(parkCellList(singleMatch));
+									} else
+										i++;
+								}
+								if (singleMatch.isEmpty()) {
+									Label zeroExactMatch = new Label("No park has the given address. Did you mean:");
+									searchTabPanel.add(zeroExactMatch);
+									searchTabPanel.add(parkCellList(addressMatched));
+								}
+							}
+						}
+					});
+				}
+				addressField.setText("");
 			}
 		});
 	}
