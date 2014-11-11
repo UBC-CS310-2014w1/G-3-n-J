@@ -18,10 +18,13 @@ import com.google.gwt.parkfinder.client.ParkServiceAsync;
 import com.google.gwt.parkfinder.client.FavoriteParkService;
 import com.google.gwt.parkfinder.client.FavoriteParkServiceAsync;
 import com.google.gwt.parkfinder.server.Park;
+import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
@@ -246,6 +249,7 @@ public class ParkFinder implements EntryPoint {
 	}
 	
 	private Grid parkGrid(List<Park> parks) {
+
 		int length = parks.size();
 		if (length == 0) return null;
 		Grid dataGrid = new Grid(length + 1, 2);
@@ -261,7 +265,43 @@ public class ParkFinder implements EntryPoint {
 		}
 		return dataGrid;
 	}
+	
+	private CellList<String> parkCellList(List<Park> parks){
+		int length = parks.size();
+		TextCell textCell = new TextCell();
+		CellList<String> cellList = new CellList<String>(textCell);
+		cellList.setRowCount(length);
+		List<String> parkLists = new ArrayList<String>();
+		
+		for(int i = 0; i < 12; i++){
+			String parkName = parks.get(i).getName();
+			parkLists.add(parkName);
+			//String parkAddress = parks.get(i).getStreetNumber() + " " + parks.get(i).getStreetName();
+			//parkLists.add(parkAddress);
+			//cellList.setRowData(i, parkLists);
+		}
+		cellList.setRowData(1, parkLists);
+		
+		System.out.println(cellList.getKeyboardSelectedRow());
+		return cellList;
+	}
+	
+	private void testFunction() {
+		parkService.getParkList(new AsyncCallback<List<Park>>() {
 
+			@Override
+			public void onFailure(Throwable caught) {
+				Label getParksInfoFailed = new Label("Error: Failed to Get Favorite Parks");
+				searchTabPanel.add(getParksInfoFailed);
+			}
+
+			@Override
+			public void onSuccess(List<Park> parks) {
+				searchTabPanel.add(parkCellList(parks));
+			}
+		});
+	}
+	
 	private void initTabs() {
 		tabPanel.setWidth("100%");
 		tabPanel.add(searchTabPanel, "Search");
@@ -270,6 +310,7 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void initTabPanels() {
+		testFunction();
 		loadSearchTabContent();
 		loadFavoritesTabContent();
 	}
@@ -280,7 +321,6 @@ public class ParkFinder implements EntryPoint {
 
 					@Override
 					public void onClick(ClickEvent event) {
-						// TODO Auto-generated method stub
 						final DialogBox message = new DialogBox();
 						final VerticalPanel msgPanel = new VerticalPanel();
 						message.add(msgPanel);
@@ -289,7 +329,6 @@ public class ParkFinder implements EntryPoint {
 
 							@Override
 							public void onFailure(Throwable caught) {
-								// TODO Auto-generated method stub
 								System.out.println("Cannot get park list");
 							}
 
@@ -320,43 +359,46 @@ public class ParkFinder implements EntryPoint {
 
 		searchName.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				filterByName();
-			}
-		});
-	}
-		
-	private void filterByName() {
-		String symbol = nameField.getText();
-		nameField.setFocus(true);
+				final String symbol = nameField.getText();
+				nameField.setFocus(true);
 
-		/** look up regular expression
-		if (!symbol.matches("^[a-z]{1,10}$")) {
-			Window.alert("'" + symbol + "' is not a valid park name.");
-			nameField.selectAll();
-			return;
-		}
-		*/
-		
-		nameField.setText("");
+				/**
+				 * TODO: look up regular expression 
+				 * 
+				 * if (!symbol.matches("^[a-z]{1,10}$")) { 
+				 * Window.alert("'" + symbol + "' is not a valid park name.");
+				 * nameField.selectAll(); 
+				 * return; 
+				 * }
+				 */
 
-		parkService.searchName(symbol, new AsyncCallback<List<Park>>() {
+				nameField.setText("");
 
-			@Override
-			public void onFailure(Throwable error) {
-				System.out.println("Faild to search for name");
-				Label searchFailed = new Label("Error: Failed to Search Name");
-				searchTabPanel.add(searchFailed);
-			}
+				parkService.getParkList(new AsyncCallback<List<Park>>() {
 
-			@Override
-			public void onSuccess(List<Park> parks) {
-				if (parks.isEmpty()) {
-					Label searchEmpty = new Label("Name does not match with any park.");
-					searchTabPanel.add(searchEmpty);
-				} else {
-					Grid dataGrid = parkGrid(parks);
-					searchTabPanel.add(dataGrid);
-				}
+					@Override
+					public void onFailure(Throwable caught) {
+						Label getParksInfoFailed = new Label("Error: Failed to Get Parks");
+						searchTabPanel.add(getParksInfoFailed);
+					}
+
+					@Override
+					public void onSuccess(List<Park> parks) {
+						List<Park> nameMatched = new ArrayList<Park>();
+						for (Park park : parks) {
+							if (park.getName().toLowerCase()
+									.contains(symbol.toLowerCase())) {
+								nameMatched.add(park);
+							}
+						}
+						if (nameMatched.isEmpty()) {
+							Label noMatchingPark = new Label("Name does not match with any park");
+							searchTabPanel.add(noMatchingPark);
+						} else {
+							searchTabPanel.add(parkGrid(nameMatched));
+						}
+					}
+				});
 			}
 		});
 	}
@@ -381,7 +423,7 @@ public class ParkFinder implements EntryPoint {
 
 						@Override
 						public void onFailure(Throwable caught) {
-							Label getParksInfoFailed = new Label("Error: Failed to Get Favorite Parks");
+							Label getParksInfoFailed = new Label("Error: Failed to Get Parks");
 							favouritesTabPanel.add(getParksInfoFailed);
 						}
 
@@ -393,8 +435,7 @@ public class ParkFinder implements EntryPoint {
 										favoriteParks.add(park);
 								}
 							}
-							Grid dataGrid = parkGrid(favoriteParks);
-							favouritesTabPanel.add(dataGrid);
+							favouritesTabPanel.add(parkGrid(favoriteParks));
 						}
 					});
 				}
