@@ -121,7 +121,7 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 			pm.close();
 		}
 	}
-
+	
 	@Override
 	public Park getParkInfo(String id) throws NotLoggedInException {
 		checkLoggedIn();
@@ -135,24 +135,6 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 				listOfPark.add(park);
 			}
 			return listOfPark.get(0);
-		} finally {
-			pm.close();
-		}
-	}
-
-	@Override
-	public List<Park> searchName(String name) throws NotLoggedInException {
-		checkLoggedIn();
-		PersistenceManager pm = getPersistenceManager();
-		List<Park> listOfPark = new ArrayList<Park>();
-		try {
-			Query q = pm.newQuery(Park.class, "Name == nameParam");
-			q.declareParameters("String nameParam");
-			List<Park> parks = (List<Park>) q.execute(name);
-			for (Park park : parks) {
-				listOfPark.add(park);
-			}
-			return listOfPark;
 		} finally {
 			pm.close();
 		}

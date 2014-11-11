@@ -1,5 +1,8 @@
 package com.google.gwt.parkfinder.client;
 
+import static com.google.gwt.dom.client.BrowserEvents.CLICK;
+import static com.google.gwt.dom.client.BrowserEvents.MOUSEOVER;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +22,8 @@ import com.google.gwt.parkfinder.client.FavoriteParkService;
 import com.google.gwt.parkfinder.client.FavoriteParkServiceAsync;
 import com.google.gwt.parkfinder.server.Park;
 import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.cell.client.ValueUpdater;
+import com.google.gwt.cell.client.ClickableTextCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -40,6 +44,8 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Unit;
 
 /**
@@ -56,17 +62,12 @@ public class ParkFinder implements EntryPoint {
 	private VerticalPanel adminPanel = new VerticalPanel();
 	private Button adminButton = new Button();
 	private DialogBox adminBox = new DialogBox();
-	HorizontalPanel buttonPanel = new HorizontalPanel();
 	
 	private VerticalPanel loginPanel = new VerticalPanel();
 	private LoginInfo loginInfo = null;
 	private Label loginLabel = new Label("Please sign in to your Google Account to access the ParkFinder application.");
 	private Anchor signInLink = new Anchor("Sign In");
 	private Anchor signOutLink = new Anchor("Sign Out");
-	
-	HorizontalPanel searchNamePanel = new HorizontalPanel();
-	final TextBox nameField = new TextBox();
-	Button searchName = new Button("Search");
 
 	private final ParkServiceAsync parkService = GWT.create(ParkService.class);
 	private final FavoriteParkServiceAsync favoriteParkService = GWT.create(FavoriteParkService.class);
@@ -187,6 +188,7 @@ public class ParkFinder implements EntryPoint {
 							}
 						});
 
+				HorizontalPanel buttonPanel = new HorizontalPanel();
 				buttonPanel.add(parseButton);
 				buttonPanel.add(displayButton);
 				adminPanel.add(buttonPanel);
@@ -209,7 +211,7 @@ public class ParkFinder implements EntryPoint {
 
 			@Override
 			public void onSuccess(Void ignore) {
-				Label parseSuccess = new Label("Data Successfully Parsed into Database");
+				Label parseSuccess = new Label("Successfully Parsed Data into Database");
 				adminPanel.add(parseSuccess);
 			}
 		});
@@ -226,78 +228,10 @@ public class ParkFinder implements EntryPoint {
 
 			@Override
 			public void onSuccess(List<Park> parks) {
-				int listSize = parks.size();
-				Label databaseSize = new Label("There are a total of " + listSize + " entries in the database.");
-				
-				int sampleNumber = 10;
-				
-				Grid dataGrid = parkGrid(parks, sampleNumber);
-				
+				Label databaseSize = new Label("There are " + parks.size() + " park entries in the database.");
+				Grid dataGrid = parkGrid(parks, 10);
 				adminPanel.add(databaseSize);
 				adminPanel.add(dataGrid);
-			}
-		});
-	}
-	
-	private Grid parkGrid(List<Park> parks, int length) {
-		List<Park> output = new ArrayList<Park>();
-		int i;
-		for (i = 0; i < length; i++) {
-			output.add(parks.get(i));
-		}
-		return parkGrid(output);
-	}
-	
-	private Grid parkGrid(List<Park> parks) {
-
-		int length = parks.size();
-		if (length == 0) return null;
-		Grid dataGrid = new Grid(length + 1, 2);
-		
-		dataGrid.setText(0, 0, "Name");
-		dataGrid.setText(0, 1, "Address");
-		
-		for(int i = 0; i < length; i++){
-			String parkName = parks.get(i).getName();
-			String parkAddress = parks.get(i).getStreetNumber() + " " + parks.get(i).getStreetName();
-			dataGrid.setText(i+1, 0, parkName);
-			dataGrid.setText(i+1, 1, parkAddress);
-		}
-		return dataGrid;
-	}
-	
-	private CellList<String> parkCellList(List<Park> parks){
-		int length = parks.size();
-		TextCell textCell = new TextCell();
-		CellList<String> cellList = new CellList<String>(textCell);
-		cellList.setRowCount(length);
-		List<String> parkLists = new ArrayList<String>();
-		
-		for(int i = 0; i < 12; i++){
-			String parkName = parks.get(i).getName();
-			parkLists.add(parkName);
-			//String parkAddress = parks.get(i).getStreetNumber() + " " + parks.get(i).getStreetName();
-			//parkLists.add(parkAddress);
-			//cellList.setRowData(i, parkLists);
-		}
-		cellList.setRowData(1, parkLists);
-		
-		System.out.println(cellList.getKeyboardSelectedRow());
-		return cellList;
-	}
-	
-	private void testFunction() {
-		parkService.getParkList(new AsyncCallback<List<Park>>() {
-
-			@Override
-			public void onFailure(Throwable caught) {
-				Label getParksInfoFailed = new Label("Error: Failed to Get Favorite Parks");
-				searchTabPanel.add(getParksInfoFailed);
-			}
-
-			@Override
-			public void onSuccess(List<Park> parks) {
-				searchTabPanel.add(parkCellList(parks));
 			}
 		});
 	}
@@ -310,47 +244,21 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void initTabPanels() {
-		testFunction();
 		loadSearchTabContent();
 		loadFavoritesTabContent();
 	}
 				
 	private void loadSearchTabContent() {
 		searchByName();
-		Button testButton = new Button("Arbutus Ridge Park Page Preview", new ClickHandler() {
-
-					@Override
-					public void onClick(ClickEvent event) {
-						final DialogBox message = new DialogBox();
-						final VerticalPanel msgPanel = new VerticalPanel();
-						message.add(msgPanel);
-						
-						parkService.getParkList(new AsyncCallback<List<Park>>() {
-
-							@Override
-							public void onFailure(Throwable caught) {
-								System.out.println("Cannot get park list");
-							}
-
-							@Override
-							public void onSuccess(List<Park> parks) {
-								Park samplePark = parks.get(0);
-								message.setText(samplePark.getName());
-								buildParkPage(samplePark, msgPanel);
-							}
-						});
-						
-						message.setAutoHideEnabled(true);
-						message.setPopupPosition(300, 150);
-						message.show();
-					}
-				});
-		searchTabPanel.add(testButton);
+		// searchByAddress();
 	}
-	
+
 	private void searchByName() {
 		Label searchNameLabel = new Label("Search By Name:");
+		HorizontalPanel searchNamePanel = new HorizontalPanel();
 		searchTabPanel.add(searchNameLabel);
+		final TextBox nameField = new TextBox();
+		Button searchName = new Button("Search");
 		searchNamePanel.add(nameField);
 		searchNamePanel.add(searchName);
 		searchTabPanel.add(searchNamePanel);
@@ -362,9 +270,8 @@ public class ParkFinder implements EntryPoint {
 				final String symbol = nameField.getText();
 				nameField.setFocus(true);
 
-				/**
-				 * TODO: look up regular expression 
-				 * 
+				// TODO: look up regular expression 
+				/** 
 				 * if (!symbol.matches("^[a-z]{1,10}$")) { 
 				 * Window.alert("'" + symbol + "' is not a valid park name.");
 				 * nameField.selectAll(); 
@@ -378,7 +285,7 @@ public class ParkFinder implements EntryPoint {
 
 					@Override
 					public void onFailure(Throwable caught) {
-						Label getParksInfoFailed = new Label("Error: Failed to Get Parks");
+						Label getParksInfoFailed = new Label("Error: Failed to Retrieve Parks Information");
 						searchTabPanel.add(getParksInfoFailed);
 					}
 
@@ -392,10 +299,10 @@ public class ParkFinder implements EntryPoint {
 							}
 						}
 						if (nameMatched.isEmpty()) {
-							Label noMatchingPark = new Label("Name does not match with any park");
+							Label noMatchingPark = new Label("There are no park with that name.");
 							searchTabPanel.add(noMatchingPark);
 						} else {
-							searchTabPanel.add(parkGrid(nameMatched));
+							searchTabPanel.add(parkCellList(nameMatched));
 						}
 					}
 				});
@@ -408,7 +315,7 @@ public class ParkFinder implements EntryPoint {
 
 			@Override
 			public void onFailure(Throwable error) {
-				Label getParksFailed = new Label("Error: Failed to Get Favorite Parks");
+				Label getParksFailed = new Label("Error: Failed to Get List of Favorite Parks");
 				favouritesTabPanel.add(getParksFailed);
 			}
 
@@ -423,7 +330,7 @@ public class ParkFinder implements EntryPoint {
 
 						@Override
 						public void onFailure(Throwable caught) {
-							Label getParksInfoFailed = new Label("Error: Failed to Get Parks");
+							Label getParksInfoFailed = new Label("Error: Failed to Retrieve Parks Information");
 							favouritesTabPanel.add(getParksInfoFailed);
 						}
 
@@ -435,7 +342,7 @@ public class ParkFinder implements EntryPoint {
 										favoriteParks.add(park);
 								}
 							}
-							favouritesTabPanel.add(parkGrid(favoriteParks));
+							favouritesTabPanel.add(parkCellList(favoriteParks));
 						}
 					});
 				}
@@ -447,19 +354,17 @@ public class ParkFinder implements EntryPoint {
 		Image img = new Image();
 		img.setUrlAndVisibleRect("http://www.google.com/images/logo.gif", 0, 0, 276, 110);
 		
-		TextBox address = new TextBox();
-		address.setText("Address: " + park.getStreetNumber() + " " + park.getStreetName());
+		Label address = new Label("Address: " + park.getStreetNumber() + " " + park.getStreetName());
 		address.setWidth("250px");
 		
-		TextBox nb = new TextBox();
-		nb.setText("Neighbourhood: " + park.getNeighbourhoodName());
+		Label nb = new Label("Neighbourhood: " + park.getNeighbourhoodName());
 		nb.setWidth("250px");
-		
+
 		panel.add(img);
 		panel.add(nb);
 		panel.add(address);
 		
-		Button favoriteButton = new Button("Add to favorite", new ClickHandler() {
+		Button favoriteButton = new Button("Add to Favorites", new ClickHandler() {
 
 			@Override
 			public void onClick(ClickEvent event) {	
@@ -468,19 +373,81 @@ public class ParkFinder implements EntryPoint {
 
 					@Override
 					public void onFailure(Throwable caught) {
-						Label addFavoritesFailed = new Label("Error: failed to add to Favorites");
+						Label addFavoritesFailed = new Label("Error: Failed to Add " + park.getName() + " to Favorites");
 						panel.add(addFavoritesFailed);
 					}
 
 					@Override
 					public void onSuccess(Void result) {
-						Label addFavoritesSuccess = new Label("Successfully added to Favorites");
+						Label addFavoritesSuccess = new Label(park.getName() + " is saved to Favorites.");
 						panel.add(addFavoritesSuccess);
 					}
 				});
 			}
 		});
 		panel.add(favoriteButton);
+	}
+	
+	private Grid parkGrid(List<Park> parks, int length) {
+		if (length == 0) return null;
+		Grid dataGrid = new Grid(length + 1, 2);
+		dataGrid.setText(0, 0, "Name");
+		dataGrid.setText(0, 1, "Address");
+		for(int i = 0; i < length; i++){
+			String parkName = parks.get(i).getName();
+			String parkAddress = parks.get(i).getStreetNumber() + " " + parks.get(i).getStreetName();
+			dataGrid.setText(i+1, 0, parkName);
+			dataGrid.setText(i+1, 1, parkAddress);
+		}
+		return dataGrid;
+	}
+	
+	private CellList<String> parkCellList(List<Park> parks){
+		Cell<String> buttonCell = new ClickableTextCell() {
+			
+			@Override
+			public void onBrowserEvent(Context context, Element parent, final String value, NativeEvent event, ValueUpdater<String> valueUpdater) {
+				super.onBrowserEvent(context, parent, value, event, valueUpdater);
+				
+				if (MOUSEOVER.equals(event.getType())) {
+					// TODO: change color when mouseover
+				}
+				
+				if (CLICK.equals(event.getType())) {
+					final DialogBox message = new DialogBox();
+					final VerticalPanel msgPanel = new VerticalPanel();
+					message.add(msgPanel);
+					parkService.getParkList(new AsyncCallback<List<Park>>() {
+
+						@Override
+						public void onFailure(Throwable caught) {
+							message.setText("Error: Failed to Retrieve Parks Information");
+						}
+
+						@Override
+						public void onSuccess(List<Park> parks) {
+							for (Park park : parks) {
+								if (value.equals(park.getName())) {
+									message.setText(park.getName());
+									buildParkPage(park, msgPanel);
+								}
+							}
+						}
+					});
+					message.setAutoHideEnabled(true);
+					message.setPopupPosition(300, 150);
+					message.show();
+				}
+			}
+		};
+		CellList<String> cellList = new CellList<String>(buttonCell);
+		cellList.setRowCount(parks.size(), true);
+		List<String> parkNames = new ArrayList<String>();
+		for (Park park : parks) {
+			parkNames.add(park.getName());
+		}
+		cellList.setRowData(0, parkNames);
+		return cellList;
 	}
 
 	private void handleError(Throwable error) {

@@ -16,8 +16,4 @@ public interface ParkServiceAsync {
 	// Return a single park by inputing the ParkID
 	// Used for query
 	public void getParkInfo(String id, AsyncCallback<Park> async);
-	
-	// Return a list of parks by inputing the Name
-	// Used for query
-	public void searchName(String name, AsyncCallback<List<Park>> async);
 }
