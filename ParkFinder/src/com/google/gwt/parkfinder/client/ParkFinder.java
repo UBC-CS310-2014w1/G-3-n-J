@@ -4,12 +4,14 @@ import static com.google.gwt.dom.client.BrowserEvents.CLICK;
 import static com.google.gwt.dom.client.BrowserEvents.MOUSEOVER;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.gwt.maps.client.InfoWindowContent;
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.Maps;
 import com.google.gwt.maps.client.control.LargeMapControl;
+import com.google.gwt.maps.client.event.MarkerClickHandler;
 import com.google.gwt.maps.client.geom.LatLng;
 import com.google.gwt.maps.client.overlay.Marker;
 import com.google.gwt.parkfinder.client.LoginInfo;
@@ -43,6 +45,8 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.Tree;
+import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -53,7 +57,7 @@ import com.google.gwt.dom.client.Style.Unit;
  */
 public class ParkFinder implements EntryPoint {
 	private HorizontalPanel mapPanel = new HorizontalPanel();
-	public MapWidget map; // public final LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
+	public MapWidget map;
 
 	private TabPanel tabPanel = new TabPanel();
 	private VerticalPanel searchTabPanel = new VerticalPanel();
@@ -130,9 +134,6 @@ public class ParkFinder implements EntryPoint {
 		
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
-//		String ASDF = loginInfo.getNickname();
-//		Button debugPanel = new Button(ASDF);
-//		RootPanel.get("signInOut").add(debugPanel);
 	}
 	
 	private void loadLogin() {
@@ -419,18 +420,38 @@ public class ParkFinder implements EntryPoint {
 	}
 	
 	private void buildParkPage(final Park park, final Panel panel) {
+		// TODO: Washrooms and pictures.
+		
+		VerticalPanel allInfo = new VerticalPanel();
+		
+		// Display name, picture, address, and neighbourhood
+		Label parkName = new Label(park.getName());
 		Image img = new Image();
 		img.setUrlAndVisibleRect("http://www.google.com/images/logo.gif", 0, 0, 276, 110);
-		
 		Label address = new Label("Address: " + park.getStreetNumber() + " " + park.getStreetName());
-		address.setWidth("250px");
+		Label neighbourhood = new Label("Neighbourhood: " + park.getNeighbourhoodName());
 		
-		Label nb = new Label("Neighbourhood: " + park.getNeighbourhoodName());
-		nb.setWidth("250px");
-
-		panel.add(img);
-		panel.add(nb);
-		panel.add(address);
+		allInfo.add(parkName);
+		allInfo.add(img);
+		allInfo.add(address);
+		allInfo.add(neighbourhood);
+		
+		
+		// Display facilities. If no facilities available, no facilities are displayed.
+		Tree facilitiesTree = new Tree();
+		TreeItem root = new TreeItem();
+		root.setText("Available Facilities");
+		String parkFacilities = park.getFacility();
+		
+		if (!parkFacilities.equalsIgnoreCase("No available facilities.")) {
+			List<String> listOfFacilities = Arrays.asList(parkFacilities.split(","));
+			for (String facility : listOfFacilities) {
+				Label facilityLabel = new Label(facility);
+				root.addItem(facilityLabel);
+			}
+			facilitiesTree.addItem(root);
+			allInfo.add(facilitiesTree);
+		}
 		
 		Button favoriteButton = new Button("Add to Favorites", new ClickHandler() {
 
@@ -453,7 +474,8 @@ public class ParkFinder implements EntryPoint {
 				});
 			}
 		});
-		panel.add(favoriteButton);
+		allInfo.add(favoriteButton);
+		panel.add(allInfo);
 	}
 	
 	private Grid parkGrid(List<Park> parks, int length) {
@@ -523,5 +545,23 @@ public class ParkFinder implements EntryPoint {
 		if (error instanceof NotLoggedInException) {
 			Window.Location.replace(loginInfo.getLogoutUrl());
 		}
+	}
+	
+	private void newMapMarker(final Park park) {
+		// TODO: Call this method on search results.
+		String latLonString = park.getGoogleMapDest();
+		List<String> latLon = Arrays.asList(latLonString.split(","));
+		
+		final LatLng markerLocation = LatLng.newInstance(Double.parseDouble(latLon.get(0)), Double.parseDouble(latLon.get(1)));
+		Marker marker = new Marker(markerLocation);
+		marker.addMarkerClickHandler(new MarkerClickHandler() {
+			@Override
+			public void onClick(MarkerClickEvent event) {
+				// TODO Do something when marker is clicked. Perhaps display park name. 
+				map.getInfoWindow().open(markerLocation, new InfoWindowContent(park.getName()));
+			}
+		});
+		
+		map.addOverlay(marker);
 	}
 }
