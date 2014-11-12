@@ -154,10 +154,12 @@ public class ParkFinder implements EntryPoint {
 
 	private void initAdminBar() {
 
+		
 		if ((loginInfo.getNickname().equals("grrraham"))||
 				(loginInfo.getNickname().equals("acie.liang"))||
 				(loginInfo.getNickname().equals("shineoutloudlol"))||
 				(loginInfo.getNickname().equals("joshparkes24"))) {
+				
 
 			Button adminButton = new Button("ADMIN", new ClickHandler() {
 				
@@ -404,7 +406,8 @@ public class ParkFinder implements EntryPoint {
 					@Override
 					public void onClick(ClickEvent event) {
 						String parkID = park.getParkID();
-						favoriteParkService.addPark(parkID, new AsyncCallback<Void>() {
+						favoriteParkService.addPark(parkID,
+								new AsyncCallback<Void>() {
 
 									@Override
 									public void onFailure(Throwable caught) {
@@ -420,7 +423,32 @@ public class ParkFinder implements EntryPoint {
 								});
 					}
 				});
+		Button removeButton = new Button("Remove from Favorites",
+				new ClickHandler() {
+
+					@Override
+					public void onClick(ClickEvent event) {
+						String parkID = park.getParkID();
+						favoriteParkService.removePark(parkID,
+								new AsyncCallback<Void>() {
+
+									@Override
+									public void onFailure(Throwable caught) {
+										Label removeFavoritesFailed = new Label("Error: Failed to Remove " + park.getName() + " to Favorites");
+										panel.add(removeFavoritesFailed);
+									}
+
+									@Override
+									public void onSuccess(Void result) {
+										Label removeFavoritesSuccess = new Label(
+												park.getName() + " is removed from Favorites.");
+										panel.add(removeFavoritesSuccess);
+									}
+								});
+					}
+				});
 		allInfo.add(favoriteButton);
+		allInfo.add(removeButton);
 		panel.add(allInfo);
 	}
 
