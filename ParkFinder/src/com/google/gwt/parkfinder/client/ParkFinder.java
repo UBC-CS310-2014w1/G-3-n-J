@@ -70,6 +70,7 @@ public class ParkFinder implements EntryPoint {
 	private Anchor signOutLink = new Anchor("Sign Out");
 
 	private List<Park> parkList = new ArrayList<Park>();
+	private List<String> favoriteParkList = new ArrayList<String>();
 
 	private final ParkServiceAsync parkService = GWT.create(ParkService.class);
 	private final FavoriteParkServiceAsync favoriteParkService = GWT.create(FavoriteParkService.class);
@@ -340,32 +341,21 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void loadFavoritesTabContent() {
-		favoriteParkService.getParks(new AsyncCallback<String[]>() {
-
-			@Override
-			public void onFailure(Throwable error) {
-				Label getParksFailed = new Label("Error: Failed to Get List of Favorite Parks");
-				favouritesTabPanel.add(getParksFailed);
-			}
-
-			@Override
-			public void onSuccess(final String[] favorites) {
-				if (favorites.length == 0) {
-					Label noFavoritePark = new Label("You do not have any favorite park.");
-					favouritesTabPanel.add(noFavoritePark);
-				} else {
-					final List<Park> favoriteParks = new ArrayList<Park>();
-					for (String id : favorites) {
-						for (Park park : parkList) {
-							if (park.getParkID().equals(id)) {
-								favoriteParks.add(park);
-							}
-						}
+		retrieveFavoriteParkInformation();
+		if (favoriteParkList.size() == 0) {
+			Label noFavoritePark = new Label("You do not have any favorite park.");
+			favouritesTabPanel.add(noFavoritePark);
+		} else {
+			final List<Park> favoriteParks = new ArrayList<Park>();
+			for (String id : favoriteParkList) {
+				for (Park park : parkList) {
+					if (park.getParkID().equals(id)) {
+						favoriteParks.add(park);
 					}
-					favouritesTabPanel.add(parkCellList(favoriteParks));
 				}
 			}
-		});
+			favouritesTabPanel.add(parkCellList(favoriteParks));
+		}
 	}
 
 	private void buildParkPage(final Park park, final Panel panel) {
@@ -406,8 +396,7 @@ public class ParkFinder implements EntryPoint {
 					@Override
 					public void onClick(ClickEvent event) {
 						String parkID = park.getParkID();
-						favoriteParkService.addPark(parkID,
-								new AsyncCallback<Void>() {
+						favoriteParkService.addPark(parkID, new AsyncCallback<Void>() {
 
 									@Override
 									public void onFailure(Throwable caught) {
@@ -423,14 +412,12 @@ public class ParkFinder implements EntryPoint {
 								});
 					}
 				});
-		Button removeButton = new Button("Remove from Favorites",
-				new ClickHandler() {
+		Button removeButton = new Button("Remove from Favorites", new ClickHandler() {
 
 					@Override
 					public void onClick(ClickEvent event) {
 						String parkID = park.getParkID();
-						favoriteParkService.removePark(parkID,
-								new AsyncCallback<Void>() {
+						favoriteParkService.removePark(parkID, new AsyncCallback<Void>() {
 
 									@Override
 									public void onFailure(Throwable caught) {
@@ -440,8 +427,7 @@ public class ParkFinder implements EntryPoint {
 
 									@Override
 									public void onSuccess(Void result) {
-										Label removeFavoritesSuccess = new Label(
-												park.getName() + " is removed from Favorites.");
+										Label removeFavoritesSuccess = new Label(park.getName() + " is removed from Favorites.");
 										panel.add(removeFavoritesSuccess);
 									}
 								});
@@ -531,9 +517,32 @@ public class ParkFinder implements EntryPoint {
 			}
 		});
 	}
+	
+	private void retrieveFavoriteParkInformation() {
+		final DialogBox message = new DialogBox();
+		final VerticalPanel msgPanel = new VerticalPanel();
+		message.add(msgPanel);
+		favoriteParkService.getParks(new AsyncCallback<String[]>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				message.setText("Error: Failed to Retrieve Favorite Parks Information");
+				message.setAutoHideEnabled(true);
+				message.setPopupPosition(300, 150);
+				message.show();
+			}
+
+			@Override
+			public void onSuccess(final String[] favorites) {
+				favoriteParkList.clear();
+				for (String id : favorites)
+					favoriteParkList.add(id);
+
+			}
+		});
+	}
 
 	private void newMapMarker(final Park park) {
-		// TODO: Call this method on search results.
 		String latLonString = park.getGoogleMapDest();
 		List<String> latLon = Arrays.asList(latLonString.split(","));
 
