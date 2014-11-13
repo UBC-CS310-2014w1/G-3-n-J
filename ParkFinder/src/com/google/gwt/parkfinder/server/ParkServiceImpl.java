@@ -63,9 +63,6 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 			List<String[]> washrooms = readerWashroom.readAll();
 			
 			List<String[]> parkImages = readerImgUrl.readAll();
-		
-			// Clear the old list of park
-			pm.evictAll();
 			
 			// Skip header row
 			reader.readNext();
@@ -83,10 +80,12 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 				park.setFacility(getFacility(park.getParkID(), facilities));
 				park.setWashroom(getWashroom(park.getParkID(), washrooms));
 				park.setParkImgUrl(getParkImgUrl(park.getParkID(), parkImages));
+				/**
 				System.out.println(park.getParkID());
 				System.out.println(park.getFacility());
 				System.out.println(park.getWashroom());
 				System.out.println(park.getParkImgUrl());
+				*/
 
 				pm.makePersistent(park);
 			}
