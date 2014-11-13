@@ -52,10 +52,17 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 			BufferedReader inWashroom = new BufferedReader(new InputStreamReader(WASHROOMS_CSV.openStream()));
 			CSVReader readerWashroom = new CSVReader(inWashroom);
 			
-			// Create Facilities & Washrooms list to iterate over
+			// ParkImgUrl CSV
+			URL PARKIMGURL_CSV = new URL("http://m.uploadedit.com/b042/141586933684.txt");
+			BufferedReader inImgUrl = new BufferedReader(new InputStreamReader(PARKIMGURL_CSV.openStream()));
+			CSVReader readerImgUrl = new CSVReader(inImgUrl);
+			
+			// Create Facilities, Washrooms, ParkImgUrl list to iterate over
 			List<String[]> facilities = readerFacility.readAll();
 			
 			List<String[]> washrooms = readerWashroom.readAll();
+			
+			List<String[]> parkImages = readerImgUrl.readAll();
 		
 			// Clear the old list of park
 			pm.evictAll();
@@ -75,15 +82,18 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 				park.setNeighbourhoodURL(nextLine[10]);
 				park.setFacility(getFacility(park.getParkID(), facilities));
 				park.setWashroom(getWashroom(park.getParkID(), washrooms));
+				park.setParkImgUrl(getParkImgUrl(park.getParkID(), parkImages));
 				System.out.println(park.getParkID());
 				System.out.println(park.getFacility());
 				System.out.println(park.getWashroom());
+				System.out.println(park.getParkImgUrl());
 
 				pm.makePersistent(park);
 			}
 			reader.close();
 			readerFacility.close();
 			readerWashroom.close();
+			readerImgUrl.close();
 		} finally {
 			pm.close();
 		}
@@ -122,6 +132,23 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 			washroom = "No available washrooms.";
 		}
 		return washroom;
+	}
+	
+	public String getParkImgUrl(String parkID, List<String[]> parkImages) throws IOException {
+		Iterator<String[]> parkImagesIterator = parkImages.iterator();
+		// Skip header row
+		parkImagesIterator.next();
+		String parkImgUrl = "";
+		while (parkImagesIterator.hasNext()) {
+			String[] record = parkImagesIterator.next();
+			if (record[0].toString().equals(parkID.toString())) {
+				parkImgUrl = "http://www.vancouver.ca" + record[1];
+			}
+		}
+		if (parkImgUrl.equals("")) {
+			parkImgUrl = "No available image.";
+		}
+		return parkImgUrl;
 	}
 
 	@Override
