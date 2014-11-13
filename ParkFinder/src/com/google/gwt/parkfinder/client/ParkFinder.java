@@ -43,6 +43,7 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
@@ -146,7 +147,7 @@ public class ParkFinder implements EntryPoint {
 		map.getInfoWindow().open(map.getCenter(), new InfoWindowContent("Ravine Park"));
 
 		final DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
-		dock.addNorth(map, 500);
+		dock.addNorth(map, 700);
 
 		// Add the map to the HTML host page
 		RootPanel.get("mapPanel").add(dock);
@@ -217,7 +218,6 @@ public class ParkFinder implements EntryPoint {
 
 		RootPanel.get("signInOut").add(signOutLink);
 	}
-	
 	
 	private void initTabs() {
 		tabPanel.setWidth("100%");
@@ -370,15 +370,15 @@ public class ParkFinder implements EntryPoint {
 		// TODO: Washrooms and pictures.
 
 		VerticalPanel allInfo = new VerticalPanel();
+		final VerticalPanel favButtonPanel = new VerticalPanel();
 
 		// Display name, picture, address, and neighbourhood
-		Label parkName = new Label(park.getName());
 		Image img = new Image();
-		img.setUrlAndVisibleRect("http://www.google.com/images/logo.gif", 0, 0, 276, 110);
+		img.setUrlAndVisibleRect(park.getParkImgUrl(), 0, 0, 333, 250);
 		Label address = new Label("Address: " + park.getStreetNumber() + " " + park.getStreetName());
 		Label neighbourhood = new Label("Neighbourhood: " + park.getNeighbourhoodName());
+//		System.out.println(park.getWashroom());
 
-		allInfo.add(parkName);
 		allInfo.add(img);
 		allInfo.add(address);
 		allInfo.add(neighbourhood);
@@ -409,18 +409,20 @@ public class ParkFinder implements EntryPoint {
 									@Override
 									public void onFailure(Throwable caught) {
 										Label addFavoritesFailed = new Label("Error: Failed to Add " + park.getName() + " to Favorites");
-										panel.add(addFavoritesFailed);
+										favButtonPanel.add(addFavoritesFailed);
 									}
 
 									@Override
 									public void onSuccess(Void result) {
 										Label addFavoritesSuccess = new Label(park.getName() + " is saved to Favorites.");
-										panel.add(addFavoritesSuccess);
+										favButtonPanel.add(addFavoritesSuccess);
 									}
 								});
 					}
 				});
-		allInfo.add(favoriteButton);
+		favButtonPanel.add(favoriteButton);
+		allInfo.add(favButtonPanel);
+		
 		panel.add(allInfo);
 	}
 
@@ -455,7 +457,9 @@ public class ParkFinder implements EntryPoint {
 
 				if (CLICK.equals(event.getType())) {
 					final DialogBox message = new DialogBox();
-					final VerticalPanel msgPanel = new VerticalPanel();
+					final ScrollPanel msgPanel = new ScrollPanel();
+					msgPanel.setSize("350px", "350px");
+					
 					message.add(msgPanel);
 					for (Park park : parks) {
 						if (value.equals(park.getName())) {
