@@ -232,70 +232,22 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void loadSearchTabContent() {
-		searchByName();
-		searchByAddress();
-	}
+		Label searchLabel = new Label("Search by Name or Address");
+		HorizontalPanel searchPanel = new HorizontalPanel();
+		searchTabPanel.add(searchLabel);
+		final TextBox field = new TextBox();
+		Button search = new Button("SEARCH");
+		searchPanel.add(field);
+		searchPanel.add(search);
+		searchTabPanel.add(searchPanel);
 
-	private void searchByName() {
-		Label searchNameLabel = new Label("Search By Name:");
-		HorizontalPanel searchNamePanel = new HorizontalPanel();
-		searchTabPanel.add(searchNameLabel);
-		final TextBox nameField = new TextBox();
-		Button searchName = new Button("Search");
-		searchNamePanel.add(nameField);
-		searchNamePanel.add(searchName);
-		searchTabPanel.add(searchNamePanel);
+		field.setFocus(true);
 
-		nameField.setFocus(true);
-
-		searchName.addClickHandler(new ClickHandler() {
+		search.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				final String symbol = nameField.getText();
-				nameField.setFocus(true);
-
-				/** 
-				if (!symbol.matches("^[a-zA-Z]{1,10}$")) {
-					Window.alert("'" + symbol + "' is not a valid park name.");
-					nameField.selectAll();
-					return;
-				}
-				*/
-
-				nameField.setText("");
-
-				List<Park> nameMatched = new ArrayList<Park>();
-				for (Park park : parkList) {
-					if (park.getName().toLowerCase()
-							.contains(symbol.toLowerCase())) {
-						nameMatched.add(park);
-					}
-				}
-				if (nameMatched.isEmpty()) {
-					Label noMatchingPark = new Label("There are no park with that name.");
-					searchTabPanel.add(noMatchingPark);
-				} else {
-					searchTabPanel.add(parkCellList(nameMatched));
-				}
-			}
-		});
-	}
-
-	private void searchByAddress() {
-		Label searchAddressLabel = new Label("Search By Address:");
-		HorizontalPanel searchAddressPanel = new HorizontalPanel();
-		searchTabPanel.add(searchAddressLabel);
-		final TextBox addressField = new TextBox();
-		Button searchAddress = new Button("Search");
-		searchAddressPanel.add(addressField);
-		searchAddressPanel.add(searchAddress);
-		searchTabPanel.add(searchAddressPanel);
-
-		addressField.setFocus(true);
-
-		searchAddress.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				final String symbol = addressField.getText();
-				addressField.setFocus(true);
+				final String symbol = field.getText();
+				field.setFocus(true);
+				field.setText("");
 
 				int length = symbol.length();
 				int i = 0;
@@ -303,43 +255,62 @@ public class ParkFinder implements EntryPoint {
 					i++;
 				}
 				if (i + 1 >= length) {
-					Window.alert("'" + symbol + "' is not a valid address.");
+					searchByName(symbol);
 				} else {
-					final String house = symbol.substring(0, i);
-					final String street = symbol.substring(i + 1, length);
-
-					List<Park> addressMatched = new ArrayList<Park>();
-					for (Park park : parkList) {
-						if (park.getStreetName().toLowerCase().contains(street.toLowerCase())) {
-							addressMatched.add(park);
-						}
-					}
-					if (addressMatched.isEmpty()) {
-						Label noMatchingPark = new Label("There are no park with that address.");
-						searchTabPanel.add(noMatchingPark);
-					} else {
-						int j = 0;
-						List<Park> singleMatch = new ArrayList<Park>();
-						while (singleMatch.isEmpty() && j < addressMatched.size()) {
-							if (house.equals(addressMatched.get(j).getStreetNumber())) {
-								singleMatch.add(addressMatched.get(j));
-								searchTabPanel.add(parkCellList(singleMatch));
-							} else
-								j++;
-						}
-						if (singleMatch.isEmpty()) {
-							Label zeroExactMatch = new Label("No park has the given address. Did you mean:");
-							searchTabPanel.add(zeroExactMatch);
-							searchTabPanel.add(parkCellList(addressMatched));
-						}
-					}
+					searchByAddress(symbol, i, length);
 				}
-				addressField.setText("");
 			}
 		});
 	}
 
-	private synchronized void loadFavoritesTabContent() {
+	private void searchByName(String symbol) {
+		List<Park> nameMatched = new ArrayList<Park>();
+		for (Park park : parkList) {
+			if (park.getName().toLowerCase().contains(symbol.toLowerCase())) {
+				nameMatched.add(park);
+			}
+		}
+		if (nameMatched.isEmpty()) {
+			Label noMatchingPark = new Label("There are no park with that name.");
+			searchTabPanel.add(noMatchingPark);
+		} else {
+			searchTabPanel.add(parkCellList(nameMatched));
+		}
+	}
+
+	private void searchByAddress(String symbol, int i, int length) {
+		final String house = symbol.substring(0, i);
+		final String street = symbol.substring(i + 1, length);
+
+		List<Park> addressMatched = new ArrayList<Park>();
+		for (Park park : parkList) {
+			if (park.getStreetName().toLowerCase()
+					.contains(street.toLowerCase())) {
+				addressMatched.add(park);
+			}
+		}
+		if (addressMatched.isEmpty()) {
+			Label noMatchingPark = new Label("There are no park with that address.");
+			searchTabPanel.add(noMatchingPark);
+		} else {
+			int j = 0;
+			List<Park> singleMatch = new ArrayList<Park>();
+			while (singleMatch.isEmpty() && j < addressMatched.size()) {
+				if (house.equals(addressMatched.get(j).getStreetNumber())) {
+					singleMatch.add(addressMatched.get(j));
+					searchTabPanel.add(parkCellList(singleMatch));
+				} else
+					j++;
+			}
+			if (singleMatch.isEmpty()) {
+				Label zeroExactMatch = new Label("No park has the given address. Did you mean:");
+				searchTabPanel.add(zeroExactMatch);
+				searchTabPanel.add(parkCellList(addressMatched));
+			}
+		}
+	}
+
+	private void loadFavoritesTabContent() {
 		retrieveFavoriteParkInformation();
 		if (favoriteParkList.size() == 0) {
 			Label noFavoritePark = new Label("You do not have any favorite park.");
@@ -407,9 +378,7 @@ public class ParkFinder implements EntryPoint {
 									@Override
 									public void onSuccess(Void result) {
 										Label addFavoritesSuccess = new Label(park.getName() + " is saved to Favorites.");
-
 										loadFavoritesTabContent();
-
 										favButtonPanel.add(addFavoritesSuccess);
 
 									}
@@ -433,8 +402,8 @@ public class ParkFinder implements EntryPoint {
 									@Override
 									public void onSuccess(Void result) {
 										Label removeFavoritesSuccess = new Label(park.getName() + " is removed from Favorites.");
-										panel.add(removeFavoritesSuccess);
 										loadFavoritesTabContent();
+										panel.add(removeFavoritesSuccess);
 									}
 								});
 					}
@@ -487,9 +456,11 @@ public class ParkFinder implements EntryPoint {
 			public void onBrowserEvent(Context context, Element parent, final String value, NativeEvent event, ValueUpdater<String> valueUpdater) {
 				super.onBrowserEvent(context, parent, value, event, valueUpdater);
 
+				/**
 				if (MOUSEOVER.equals(event.getType())) {
 					// TODO: change color when mouse-over
 				}
+				*/
 
 				if (CLICK.equals(event.getType())) {
 					final DialogBox message = new DialogBox();
