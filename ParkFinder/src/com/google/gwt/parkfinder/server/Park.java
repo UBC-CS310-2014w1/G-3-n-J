@@ -29,6 +29,8 @@ public class Park implements Serializable {
 	private String Facility;
 	@Persistent
 	private String Washroom;
+	@Persistent
+	private String ParkImgUrl;
 
 	public Park() {
 		// TODO Auto-generated constructor stub
@@ -69,6 +71,10 @@ public class Park implements Serializable {
 	public String getWashroom() {
 		return Washroom;
 	}
+	
+	public String getParkImgUrl() {
+		return ParkImgUrl;
+	}
 
 	public void setParkID(String parkID) {
 		ParkID = parkID;
@@ -104,5 +110,9 @@ public class Park implements Serializable {
 
 	public void setWashroom(String washroom) {
 		Washroom = washroom;
+	}
+	
+	public void setParkImgUrl(String parkImgUrl) {
+		ParkImgUrl = parkImgUrl;
 	}
 }
