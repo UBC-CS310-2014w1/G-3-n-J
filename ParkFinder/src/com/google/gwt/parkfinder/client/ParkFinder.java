@@ -62,7 +62,11 @@ public class ParkFinder implements EntryPoint {
 	private TabPanel tabPanel = new TabPanel();
 	private VerticalPanel searchTabPanel = new VerticalPanel();
 	private VerticalPanel favouritesTabPanel = new VerticalPanel();
-	
+
+	private VerticalPanel adminPanel = new VerticalPanel();
+	private Button adminButton = new Button();
+	private DialogBox adminBox = new DialogBox();
+
 	private VerticalPanel loginPanel = new VerticalPanel();
 	private LoginInfo loginInfo = null;
 	private Label loginLabel = new Label("Please sign in to your Google Account to access the ParkFinder application.");
@@ -70,7 +74,6 @@ public class ParkFinder implements EntryPoint {
 	private Anchor signOutLink = new Anchor("Sign Out");
 
 	private List<Park> parkList = new ArrayList<Park>();
-	private List<String> favoriteParkList = new ArrayList<String>();
 
 	private final ParkServiceAsync parkService = GWT.create(ParkService.class);
 	private final FavoriteParkServiceAsync favoriteParkService = GWT.create(FavoriteParkService.class);
@@ -115,10 +118,22 @@ public class ParkFinder implements EntryPoint {
 		});
 
 		retrieveParkInformation();
-		initAdminBar();
+		initAdmin();
 		initTabPanels();
 		initTabs();
 
+		RootPanel.get("signInOut").add(signOutLink);
+		// Adding admin button to signOutLink div temporarily
+		// manually enter names of admins!!
+		/**
+		 * temporarily disable the admin-only feature if
+		 * ((loginInfo.getNickname().equals("grrraham"))||
+		 * (loginInfo.getNickname().equals("acie.liang"))||
+		 * (loginInfo.getNickname().equals("shineoutloudlol"))||
+		 * (loginInfo.getNickname().equals("joshparkes24"))){
+		 * RootPanel.get("signInOut").add(adminButton); }
+		 */
+		RootPanel.get("signInOut").add(adminButton);
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
 	}
@@ -153,75 +168,57 @@ public class ParkFinder implements EntryPoint {
 		RootPanel.get("mapPanel").add(dock);
 	}
 
-	private void initAdminBar() {
+	private void initAdmin() {
+		// TODO: fix weird admin button bug
+		adminButton = new Button("ADMIN", new ClickHandler() {
 
-		
-		if ((loginInfo.getNickname().equals("grrraham"))||
-				(loginInfo.getNickname().equals("acie.liang"))||
-				(loginInfo.getNickname().equals("shineoutloudlol"))||
-				(loginInfo.getNickname().equals("joshparkes24"))) {
-				
+			@Override
+			public void onClick(ClickEvent event) {
+				adminBox.setText("Administrator Panel");
+				Button parseButton = new Button("Parse Data", new ClickHandler() {
 
-			Button adminButton = new Button("ADMIN", new ClickHandler() {
-				
-				@Override
-				public void onClick(ClickEvent event) {
-					DialogBox adminBox = new DialogBox();
-					adminBox.setText("Administrator Panel");
-					final VerticalPanel adminPanel = new VerticalPanel();
-					
-					
+							@Override
+							public void onClick(ClickEvent event) {
+								parkService.storeParkList(new AsyncCallback<Void>() {
 
-					Button parseButton = new Button("Parse Data", new ClickHandler() {
+									@Override
+									public void onFailure(Throwable error) {
+										Label parseFailed = new Label("Error: Failed to Parse Data");
+										adminPanel.add(parseFailed);
+									}
 
-						@Override
-						public void onClick(ClickEvent event) {
-							parkService.storeParkList(new AsyncCallback<Void>() {
+									@Override
+									public void onSuccess(Void ignore) {
+										Label parseSuccess = new Label("Successfully Parsed Data into Database");
+										adminPanel.add(parseSuccess);
+									}
+								});
+							}
+						});
 
-								@Override
-								public void onFailure(Throwable error) {
-									Label parseFailed = new Label("Error: Failed to Parse Data");
-									adminPanel.add(parseFailed);
-								}
+				Button displayButton = new Button("Show Database", new ClickHandler() {
 
-								@Override
-								public void onSuccess(Void ignore) {
-									Label parseSuccess = new Label("Successfully Parsed Data into Database");
-									adminPanel.add(parseSuccess);
-								}
-							});
-						}
-					});
+							@Override
+							public void onClick(ClickEvent event) {
+								Label databaseSize = new Label("There are " + parkList.size() + " park entries in the database.");
+								Grid dataGrid = parkGrid(parkList, 10);
+								adminPanel.add(databaseSize);
+								adminPanel.add(dataGrid);
+							}
+						});
 
-					
-					Button displayButton = new Button("Show Database", new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent event) {
-							Label databaseSize = new Label("There are " + parkList.size() + " park entries in the database.");
-							Grid dataGrid = parkGrid(parkList, 10);
-							adminPanel.add(databaseSize);
-							adminPanel.add(dataGrid);
-						}
-					});
-
-					HorizontalPanel buttonPanel = new HorizontalPanel();
-					buttonPanel.add(parseButton);
-					buttonPanel.add(displayButton);
-
-					adminPanel.add(buttonPanel); 
-					adminBox.add(adminPanel);
-					adminBox.center();
-					adminBox.setAutoHideEnabled(true);
-					adminBox.show();
-				}
-			});
-			RootPanel.get("signInOut").add(adminButton);
-		}
-
-		RootPanel.get("signInOut").add(signOutLink);
+				HorizontalPanel buttonPanel = new HorizontalPanel();
+				buttonPanel.add(parseButton);
+				buttonPanel.add(displayButton);
+				adminPanel.add(buttonPanel);
+				adminBox.add(adminPanel);
+				adminBox.center();
+				adminBox.setAutoHideEnabled(true);
+				adminBox.show();
+			}
+		});
 	}
-	
-	
+
 	private void initTabs() {
 		tabPanel.setWidth("100%");
 		tabPanel.add(searchTabPanel, "Search");
@@ -341,21 +338,32 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void loadFavoritesTabContent() {
-		retrieveFavoriteParkInformation();
-		if (favoriteParkList.size() == 0) {
-			Label noFavoritePark = new Label("You do not have any favorite park.");
-			favouritesTabPanel.add(noFavoritePark);
-		} else {
-			final List<Park> favoriteParks = new ArrayList<Park>();
-			for (String id : favoriteParkList) {
-				for (Park park : parkList) {
-					if (park.getParkID().equals(id)) {
-						favoriteParks.add(park);
+		favoriteParkService.getParks(new AsyncCallback<String[]>() {
+
+			@Override
+			public void onFailure(Throwable error) {
+				Label getParksFailed = new Label("Error: Failed to Get List of Favorite Parks");
+				favouritesTabPanel.add(getParksFailed);
+			}
+
+			@Override
+			public void onSuccess(final String[] favorites) {
+				if (favorites.length == 0) {
+					Label noFavoritePark = new Label("You do not have any favorite park.");
+					favouritesTabPanel.add(noFavoritePark);
+				} else {
+					final List<Park> favoriteParks = new ArrayList<Park>();
+					for (String id : favorites) {
+						for (Park park : parkList) {
+							if (park.getParkID().equals(id)) {
+								favoriteParks.add(park);
+							}
+						}
 					}
+					favouritesTabPanel.add(parkCellList(favoriteParks));
 				}
 			}
-			favouritesTabPanel.add(parkCellList(favoriteParks));
-		}
+		});
 	}
 
 	private void buildParkPage(final Park park, final Panel panel) {
@@ -412,29 +420,7 @@ public class ParkFinder implements EntryPoint {
 								});
 					}
 				});
-		Button removeButton = new Button("Remove from Favorites", new ClickHandler() {
-
-					@Override
-					public void onClick(ClickEvent event) {
-						String parkID = park.getParkID();
-						favoriteParkService.removePark(parkID, new AsyncCallback<Void>() {
-
-									@Override
-									public void onFailure(Throwable caught) {
-										Label removeFavoritesFailed = new Label("Error: Failed to Remove " + park.getName() + " to Favorites");
-										panel.add(removeFavoritesFailed);
-									}
-
-									@Override
-									public void onSuccess(Void result) {
-										Label removeFavoritesSuccess = new Label(park.getName() + " is removed from Favorites.");
-										panel.add(removeFavoritesSuccess);
-									}
-								});
-					}
-				});
 		allInfo.add(favoriteButton);
-		allInfo.add(removeButton);
 		panel.add(allInfo);
 	}
 
@@ -504,45 +490,21 @@ public class ParkFinder implements EntryPoint {
 			@Override
 			public void onFailure(Throwable caught) {
 				message.setText("Error: Failed to Retrieve Parks Information");
-				message.setAutoHideEnabled(true);
-				message.setPopupPosition(300, 150);
-				message.show();
 			}
 
 			@Override
 			public void onSuccess(List<Park> parks) {
 				for (Park park : parks)
 					parkList.add(park);
-				
 			}
 		});
-	}
-	
-	private void retrieveFavoriteParkInformation() {
-		final DialogBox message = new DialogBox();
-		final VerticalPanel msgPanel = new VerticalPanel();
-		message.add(msgPanel);
-		favoriteParkService.getParks(new AsyncCallback<String[]>() {
-
-			@Override
-			public void onFailure(Throwable caught) {
-				message.setText("Error: Failed to Retrieve Favorite Parks Information");
-				message.setAutoHideEnabled(true);
-				message.setPopupPosition(300, 150);
-				message.show();
-			}
-
-			@Override
-			public void onSuccess(final String[] favorites) {
-				favoriteParkList.clear();
-				for (String id : favorites)
-					favoriteParkList.add(id);
-
-			}
-		});
+		message.setAutoHideEnabled(true);
+		message.setPopupPosition(300, 150);
+		message.show();
 	}
 
 	private void newMapMarker(final Park park) {
+		// TODO: Call this method on search results.
 		String latLonString = park.getGoogleMapDest();
 		List<String> latLon = Arrays.asList(latLonString.split(","));
 
