@@ -270,6 +270,12 @@ public class ParkFinder implements EntryPoint {
 						nameMatched.add(park);
 					}
 				}
+				
+				if (searchTabPanel.getWidgetCount() > 4) {
+					// Clears previous search results
+					searchTabPanel.remove(4);
+				}
+				
 				if (nameMatched.isEmpty()) {
 					Label noMatchingPark = new Label("There are no park with that name.");
 					searchTabPanel.add(noMatchingPark);
@@ -305,6 +311,11 @@ public class ParkFinder implements EntryPoint {
 				if (i + 1 >= length) {
 					Window.alert("'" + symbol + "' is not a valid address.");
 				} else {
+					if (searchTabPanel.getWidgetCount() > 4) {
+						// Clears previous search results
+						searchTabPanel.remove(4);
+					}
+					
 					final String house = symbol.substring(0, i);
 					final String street = symbol.substring(i + 1, length);
 
@@ -499,7 +510,7 @@ public class ParkFinder implements EntryPoint {
 				if (CLICK.equals(event.getType())) {
 					final DialogBox message = new DialogBox();
 					final ScrollPanel msgPanel = new ScrollPanel();
-					msgPanel.setSize("350px", "350px");
+					msgPanel.setSize("350px", "375px");
 					
 					message.add(msgPanel);
 					for (Park park : parks) {
