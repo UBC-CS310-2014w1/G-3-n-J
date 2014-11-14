@@ -30,6 +30,8 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -337,7 +339,6 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void buildParkPage(final Park park, final Panel panel) {
-
 		VerticalPanel allInfo = new VerticalPanel();
 		final VerticalPanel favButtonPanel = new VerticalPanel();
 
@@ -346,28 +347,68 @@ public class ParkFinder implements EntryPoint {
 		img.setUrlAndVisibleRect(park.getParkImgUrl(), 0, 0, 333, 250);
 		Label address = new Label("Address: " + park.getStreetNumber() + " " + park.getStreetName());
 		Label neighbourhood = new Label("Neighbourhood: " + park.getNeighbourhoodName());
-		// System.out.println(park.getWashroom());
 
 		allInfo.add(img);
 		allInfo.add(address);
 		allInfo.add(neighbourhood);
 
-		// Display facilities. If no facilities available, no facilities are displayed.
-		Tree facilitiesTree = new Tree();
-		TreeItem root = new TreeItem();
-		root.setText("Available Facilities");
+		// Display facilities.
+		
 		String parkFacilities = park.getFacility();
-
 		if (!parkFacilities.equalsIgnoreCase("No available facilities.")) {
+			Tree facilityTree = new Tree();
+			final TreeItem facilitiesRoot = new TreeItem();
+			facilitiesRoot.setText("Available Facilities");
+			
 			List<String> listOfFacilities = Arrays.asList(parkFacilities.split(","));
 			for (String facility : listOfFacilities) {
 				Label facilityLabel = new Label(facility);
-				root.addItem(facilityLabel);
+				facilitiesRoot.addItem(facilityLabel);
 			}
-			facilitiesTree.addItem(root);
-			allInfo.add(facilitiesTree);
+			facilityTree.addItem(facilitiesRoot);
+			allInfo.add(facilityTree);
+			
+			facilityTree.addMouseDownHandler(new MouseDownHandler() {
+				@Override
+				public void onMouseDown(MouseDownEvent event) {
+					if (facilitiesRoot.getState() == true)
+						facilitiesRoot.setState(false);
+					else facilitiesRoot.setState(true);
+				}
+				
+			});
+		}
+		
+		// Displays washrooms
+		String parkWashrooms = park.getWashroom();
+		if (!parkWashrooms.equalsIgnoreCase("No available washrooms.")) {
+			Tree washroomTree = new Tree();
+			final TreeItem washroomsRoot = new TreeItem();
+			washroomsRoot.setText("Washrooms available at:");
+			
+			List<String> listOfWashrooms = Arrays.asList(parkWashrooms.split("LOCATION:"));
+			for (String washroom : listOfWashrooms) {
+				if (washroom.length() > 0) {
+					String washroomText = washroom.substring(0, washroom.length() - 2);
+					Label washroomLabel = new Label(washroomText);
+					washroomsRoot.addItem(washroomLabel);
+				}
+			}
+			washroomTree.addItem(washroomsRoot);
+			allInfo.add(washroomTree);
+			
+			washroomTree.addMouseDownHandler(new MouseDownHandler() {
+				@Override
+				public void onMouseDown(MouseDownEvent event) {
+					if (washroomsRoot.getState() == true)
+						washroomsRoot.setState(false);
+					else washroomsRoot.setState(true);
+				}
+				
+			});
 		}
 
+		// Favourites button
 		Button favoriteButton = new Button("Add to Favorites", new ClickHandler() {
 
 					@Override
@@ -462,11 +503,11 @@ public class ParkFinder implements EntryPoint {
 			public void onBrowserEvent(Context context, Element parent, final String value, NativeEvent event, ValueUpdater<String> valueUpdater) {
 				super.onBrowserEvent(context, parent, value, event, valueUpdater);
 
-				/**
-				if (MOUSEOVER.equals(event.getType())) {
-					// TODO: change color when mouse-over
-				}
-				*/
+// 				Commented out, because exception was being thrown at this line.
+//				if (MOUSEOVER.equals(event.getType())) {
+//					// TODO: change color when mouseover
+//				}
+
 
 				if (CLICK.equals(event.getType())) {
 					final DialogBox message = new DialogBox();
