@@ -1,1 +1,5 @@
 /test-classes
+*.js
+gwt-unitCache*
+*.symbolMap
+*.gwt.rpc
