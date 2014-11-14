@@ -6,6 +6,7 @@ import java.util.List;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.parkfinder.filter.ParkFilter;
+import com.google.gwt.parkfinder.filter.PlaygroundFilter;
 import com.google.gwt.parkfinder.filter.WashroomFilter;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -16,6 +17,7 @@ public class FilterPanel extends VerticalPanel {
 	private List<ParkFilter> filters = new ArrayList<ParkFilter>();
 	private ParkFinder parkFinder;
 	private CheckBox washroomCheckBox = new CheckBox("Washrooms");
+	private CheckBox playgroundCheckBox = new CheckBox("Playgrounds");
 
 	
 	public FilterPanel(ParkFinder pf) {
@@ -39,6 +41,25 @@ public class FilterPanel extends VerticalPanel {
 			}
 		});
 		this.add(washroomCheckBox);
+		
+		playgroundCheckBox.setValue(false);
+		playgroundCheckBox.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				if (playgroundCheckBox.getValue()) {
+//					washroomCheckBox.setValue(false);
+					for (ParkFilter f: filters){
+						if (f.getClass() == PlaygroundFilter.class){
+							filters.remove(f);
+						}
+					}
+				} else {
+//					washroomCheckBox.setValue(true);
+					filters.add(new PlaygroundFilter());
+				}
+//				pf.refreshParks();
+			}
+		});
+		this.add(playgroundCheckBox);
 	}
 ////  TODO DISTANCE FILTER
 //		HorizontalPanel distancePanel = new HorizontalPanel();
