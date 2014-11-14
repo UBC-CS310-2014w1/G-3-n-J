@@ -251,13 +251,20 @@ public class ParkFinder implements EntryPoint {
 
 				int length = symbol.length();
 				int i = 0;
-				while (symbol.charAt(i) != ' ' && i + 1 < length) {
-					i++;
+				if (symbol.charAt(0) >= '0' && symbol.charAt(0) <= '9') {
+
+					while (symbol.charAt(i) != ' ' && i + 1 < length) {
+						i++;
+					}
+					if (i + 1 >= length) {
+						Label invalidAddress = new Label("Invalid park address");
+						searchTabPanel.add(invalidAddress);
+					} else {
+						searchByAddress(symbol, i, length);
+					}
 				}
-				if (i + 1 >= length) {
+				else {
 					searchByName(symbol);
-				} else {
-					searchByAddress(symbol, i, length);
 				}
 			}
 		});
@@ -330,7 +337,6 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void buildParkPage(final Park park, final Panel panel) {
-		// TODO: Washrooms and pictures.
 
 		VerticalPanel allInfo = new VerticalPanel();
 		final VerticalPanel favButtonPanel = new VerticalPanel();
@@ -340,7 +346,7 @@ public class ParkFinder implements EntryPoint {
 		img.setUrlAndVisibleRect(park.getParkImgUrl(), 0, 0, 333, 250);
 		Label address = new Label("Address: " + park.getStreetNumber() + " " + park.getStreetName());
 		Label neighbourhood = new Label("Neighbourhood: " + park.getNeighbourhoodName());
-//		System.out.println(park.getWashroom());
+		// System.out.println(park.getWashroom());
 
 		allInfo.add(img);
 		allInfo.add(address);
@@ -512,7 +518,7 @@ public class ParkFinder implements EntryPoint {
 
 			@Override
 			public void onSuccess(List<Park> parks) {
-				// parkList.clear();
+				parkList.clear();
 				for (Park park : parks)
 					parkList.add(park);
 			}
@@ -536,7 +542,7 @@ public class ParkFinder implements EntryPoint {
 
 			@Override
 			public void onSuccess(final String[] favorites) {
-				// favoriteParkList.clear();
+				favoriteParkList.clear();
 				for (String id : favorites) {
 					favoriteParkList.add(id);
 				}

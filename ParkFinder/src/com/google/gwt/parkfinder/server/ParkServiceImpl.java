@@ -86,7 +86,6 @@ public class ParkServiceImpl extends RemoteServiceServlet implements ParkService
 				System.out.println(park.getWashroom());
 				System.out.println(park.getParkImgUrl());
 				*/
-
 				pm.makePersistent(park);
 			}
 			reader.close();
