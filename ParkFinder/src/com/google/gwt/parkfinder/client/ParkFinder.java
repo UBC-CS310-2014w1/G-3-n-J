@@ -247,13 +247,17 @@ public class ParkFinder implements EntryPoint {
 
 		search.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
+
 				final String symbol = field.getText();
 				field.setFocus(true);
 				field.setText("");
 
+
 				int length = symbol.length();
 				int i = 0;
+
 				if (symbol.charAt(0) >= '0' && symbol.charAt(0) <= '9') {
+
 
 					while (symbol.charAt(i) != ' ' && i + 1 < length) {
 						i++;
@@ -279,6 +283,12 @@ public class ParkFinder implements EntryPoint {
 				nameMatched.add(park);
 			}
 		}
+		
+		if (searchTabPanel.getWidgetCount() > 2) {
+			// Clears previous search results
+			searchTabPanel.remove(2);
+		}
+		
 		if (nameMatched.isEmpty()) {
 			Label noMatchingPark = new Label("There are no park with that name.");
 			searchTabPanel.add(noMatchingPark);
@@ -298,6 +308,12 @@ public class ParkFinder implements EntryPoint {
 				addressMatched.add(park);
 			}
 		}
+		
+		if (searchTabPanel.getWidgetCount() > 2) {
+			// Clears previous search results
+			searchTabPanel.remove(2);
+		}
+		
 		if (addressMatched.isEmpty()) {
 			Label noMatchingPark = new Label("There are no park with that address.");
 			searchTabPanel.add(noMatchingPark);
@@ -512,7 +528,7 @@ public class ParkFinder implements EntryPoint {
 				if (CLICK.equals(event.getType())) {
 					final DialogBox message = new DialogBox();
 					final ScrollPanel msgPanel = new ScrollPanel();
-					msgPanel.setSize("350px", "350px");
+					msgPanel.setSize("350px", "375px");
 					
 					message.add(msgPanel);
 					
