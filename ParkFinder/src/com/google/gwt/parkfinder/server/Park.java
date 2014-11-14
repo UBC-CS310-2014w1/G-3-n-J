@@ -115,4 +115,16 @@ public class Park implements Serializable {
 	public void setParkImgUrl(String parkImgUrl) {
 		ParkImgUrl = parkImgUrl;
 	}
+
+	public float getLon() {
+		int pivot = GoogleMapDest.indexOf(',');
+		String lon = GoogleMapDest.substring(pivot + 1, GoogleMapDest.length());
+		return Float.parseFloat(lon);
+	}
+	
+	public float getLat() {
+		int pivot = GoogleMapDest.indexOf(',');
+		String lat = GoogleMapDest.substring(0, pivot);
+		return Float.parseFloat(lat);
+	}
 }
