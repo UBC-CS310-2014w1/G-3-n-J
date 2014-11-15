@@ -9,7 +9,6 @@ public class NeighbourhoodFilter implements ParkFilter {
 	List<String> neighbourhoods;
 
 	public NeighbourhoodFilter(List<String> neighbourhoods) {
-		super();
 		this.neighbourhoods = neighbourhoods;
 	}
 
