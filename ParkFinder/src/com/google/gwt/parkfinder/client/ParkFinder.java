@@ -3,6 +3,7 @@ package com.google.gwt.parkfinder.client;
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;
 import static com.google.gwt.dom.client.BrowserEvents.MOUSEOVER;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -118,10 +119,13 @@ public class ParkFinder implements EntryPoint {
 			}
 		});
 
-		retrieveParkInformation();
-		initAdminBar();
-		initTabPanels();
+		// Sequence Map (set up this way to avoid synchronization problem)
+		// retrieveParkInformation() -> loadAdminBarContent()
+		//							 -> loadSearchTabContent()
+		// retrieveFavoriteParkInformation() -> loadFavoriteTabContent()
 		initTabs();
+		retrieveParkInformation();
+		retrieveFavoriteParkInformation();
 
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
@@ -156,8 +160,64 @@ public class ParkFinder implements EntryPoint {
 		// Add the map to the HTML host page
 		RootPanel.get("mapPanel").add(dock);
 	}
+	
+	private void initTabs() {
+		tabPanel.setWidth("100%");
+		tabPanel.add(searchTabPanel, "Search");
+		tabPanel.add(favouritesTabPanel, "Favourites");
+		tabPanel.selectTab(0);
+	}
 
-	private void initAdminBar() {
+	private void retrieveParkInformation() {
+		final DialogBox message = new DialogBox();
+		final VerticalPanel msgPanel = new VerticalPanel();
+		message.add(msgPanel);
+		
+		parkService.getParkList(new AsyncCallback<List<Park>>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				message.setText("Error: Failed to Retrieve Parks Information.");
+				message.setAutoHideEnabled(true);
+				message.setPopupPosition(300, 150);
+				message.show();
+			}
+
+			@Override
+			public void onSuccess(List<Park> parks) {
+				parkList.clear();
+				for (Park park : parks)
+					parkList.add(park);
+				loadAdminBarContent();
+				loadSearchTabContent();
+			}
+		});
+	}
+	
+	private void retrieveFavoriteParkInformation() {
+		final DialogBox message = new DialogBox();
+		final VerticalPanel msgPanel = new VerticalPanel();
+		message.add(msgPanel);
+		
+		favoriteParkService.getParks(new AsyncCallback<String[]>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				message.setText("Error: Failed to Retrieve Favorite Parks Information.");
+				message.setAutoHideEnabled(true);
+				message.setPopupPosition(300, 150);
+				message.show();
+			}
+
+			@Override
+			public void onSuccess(final String[] favorites) {
+				favoriteParkList.clear();
+				for (String id : favorites) 
+					favoriteParkList.add(id);
+				loadFavoritesTabContent();
+			}
+		});
+	}
+	
+	private void loadAdminBarContent() {
 
 		if ((loginInfo.getNickname().equals("grrraham"))||
 				(loginInfo.getNickname().equals("acie.liang"))||
@@ -220,20 +280,6 @@ public class ParkFinder implements EntryPoint {
 		}
 
 		RootPanel.get("signInOut").add(signOutLink);
-	}
-	
-	private void initTabs() {
-		tabPanel.setWidth("100%");
-		tabPanel.add(searchTabPanel, "Search");
-		tabPanel.add(favouritesTabPanel, "Favourites");
-		tabPanel.selectTab(0);
-	}
-
-	private void initTabPanels() {
-		loadSearchTabContent();
-		
-		// finish one before start another
-		retrieveFavoriteParkInformation();
 	}
 
 	private void loadSearchTabContent() {
@@ -523,16 +569,16 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private CellList<String> parkCellList(final List<Park> parks) {
-		Cell<String> buttonCell = new ClickableTextCell() {
+		final Cell<String> buttonCell = new ClickableTextCell() {
 
 			@Override
 			public void onBrowserEvent(Context context, Element parent, final String value, NativeEvent event, ValueUpdater<String> valueUpdater) {
 				super.onBrowserEvent(context, parent, value, event, valueUpdater);
 
-// 				Commented out, because exception was being thrown at this line.
-//				if (MOUSEOVER.equals(event.getType())) {
-//					// TODO: change color when mouseover
-//				}
+				if (MOUSEOVER.equals(event.getType())) {
+					// TODO Change color or highlight the text & background when mouse-over. 
+				    // setStyleName("highlight"); // create "highlight" in CSS
+				}
 
 				if (CLICK.equals(event.getType())) {
 					final DialogBox message = new DialogBox();
@@ -567,56 +613,6 @@ public class ParkFinder implements EntryPoint {
 		return cellList;
 	}
 
-	private void retrieveParkInformation() {
-		final DialogBox message = new DialogBox();
-		final VerticalPanel msgPanel = new VerticalPanel();
-		message.add(msgPanel);
-		
-		parkService.getParkList(new AsyncCallback<List<Park>>() {
-
-			@Override
-			public void onFailure(Throwable caught) {
-				message.setText("Error: Failed to Retrieve Parks Information.");
-				message.setAutoHideEnabled(true);
-				message.setPopupPosition(300, 150);
-				message.show();
-			}
-
-			@Override
-			public void onSuccess(List<Park> parks) {
-				parkList.clear();
-				for (Park park : parks)
-					parkList.add(park);
-			}
-		});
-	}
-	
-	private void retrieveFavoriteParkInformation() {
-		final DialogBox message = new DialogBox();
-		final VerticalPanel msgPanel = new VerticalPanel();
-		message.add(msgPanel);
-		
-		favoriteParkService.getParks(new AsyncCallback<String[]>() {
-
-			@Override
-			public void onFailure(Throwable caught) {
-				message.setText("Error: Failed to Retrieve Favorite Parks Information.");
-				message.setAutoHideEnabled(true);
-				message.setPopupPosition(300, 150);
-				message.show();
-			}
-
-			@Override
-			public void onSuccess(final String[] favorites) {
-				favoriteParkList.clear();
-				for (String id : favorites) {
-					favoriteParkList.add(id);
-				}
-				loadFavoritesTabContent();
-			}
-		});
-	}
-
 	private void newMapMarker(final Park park) {
 		String latLonString = park.getGoogleMapDest();
 		List<String> latLon = Arrays.asList(latLonString.split(","));
@@ -626,7 +622,8 @@ public class ParkFinder implements EntryPoint {
 		marker.addMarkerClickHandler(new MarkerClickHandler() {
 			@Override
 			public void onClick(MarkerClickEvent event) {
-				// TODO Do something when marker is clicked. Perhaps display park name.
+				// TODO Do something when marker is clicked. 
+				// Display the park name and the distance from current address, if given.
 				map.getInfoWindow().open(markerLocation,new InfoWindowContent(park.getName()));
 			}
 		});
