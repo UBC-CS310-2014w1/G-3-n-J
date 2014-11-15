@@ -39,6 +39,7 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
@@ -230,7 +231,9 @@ public class ParkFinder implements EntryPoint {
 
 	private void initTabPanels() {
 		loadSearchTabContent();
-		loadFavoritesTabContent();
+		
+		// finish one before start another
+		retrieveFavoriteParkInformation();
 	}
 
 	private void loadSearchTabContent() {
@@ -336,10 +339,14 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void loadFavoritesTabContent() {
-		retrieveFavoriteParkInformation();
+		if (favouritesTabPanel.getWidgetCount() > 0) {
+			// Clears previous search results
+			favouritesTabPanel.remove(0);
+		}
+		
 		if (favoriteParkList.size() == 0) {
 			Label noFavoritePark = new Label("You do not have any favorite park.");
-			System.out.println("this should come out second");
+			
 			favouritesTabPanel.add(noFavoritePark);
 		} else {
 			final List<Park> favoriteParks = new ArrayList<Park>();
@@ -425,10 +432,10 @@ public class ParkFinder implements EntryPoint {
 		}
 
 		// Favourites button
-		Button favoriteButton = new Button("Add to Favorites", new ClickHandler() {
+		final Button favoriteButton = new Button("Add to Favorites", new ClickHandler() {
 
 					@Override
-					public void onClick(ClickEvent event) {
+					public void onClick(final ClickEvent event) {
 						String parkID = park.getParkID();
 						favoriteParkService.addPark(parkID, new AsyncCallback<Void>() {
 
@@ -440,33 +447,37 @@ public class ParkFinder implements EntryPoint {
 
 									@Override
 									public void onSuccess(Void result) {
+										retrieveFavoriteParkInformation();
 										Label addFavoritesSuccess = new Label(park.getName() + " is saved to Favorites.");
-										loadFavoritesTabContent();
 										favButtonPanel.add(addFavoritesSuccess);
+										((FocusWidget) event.getSource()).setEnabled(false);
+										//removeButton.setEnabled(true);
 
 									}
 								});
 					}
 				});
 
-		Button removeButton = new Button("Remove from Favorites", new ClickHandler() {
+		final Button removeButton = new Button("Remove from Favorites", new ClickHandler() {
 
 					@Override
-					public void onClick(ClickEvent event) {
+					public void onClick(final ClickEvent event) {
 						String parkID = park.getParkID();
 						favoriteParkService.removePark(parkID, new AsyncCallback<Void>() {
 
 									@Override
 									public void onFailure(Throwable caught) {
 										Label removeFavoritesFailed = new Label("Error: Failed to Remove " + park.getName() + " to Favorites");
-										panel.add(removeFavoritesFailed);
+										favButtonPanel.add(removeFavoritesFailed);
 									}
 
 									@Override
 									public void onSuccess(Void result) {
+										retrieveFavoriteParkInformation();
 										Label removeFavoritesSuccess = new Label(park.getName() + " is removed from Favorites.");
-										loadFavoritesTabContent();
-										panel.add(removeFavoritesSuccess);
+										favButtonPanel.add(removeFavoritesSuccess);
+										((FocusWidget) event.getSource()).setEnabled(false);
+										favoriteButton.setEnabled(true);
 									}
 								});
 					}
@@ -487,7 +498,6 @@ public class ParkFinder implements EntryPoint {
 			favoriteButton.setEnabled(false);
 			removeButton.setEnabled(true);
 		}
-	
 
 		favButtonPanel.add(favoriteButton);
 		favButtonPanel.add(removeButton);
@@ -524,7 +534,6 @@ public class ParkFinder implements EntryPoint {
 //					// TODO: change color when mouseover
 //				}
 
-
 				if (CLICK.equals(event.getType())) {
 					final DialogBox message = new DialogBox();
 					final ScrollPanel msgPanel = new ScrollPanel();
@@ -558,7 +567,7 @@ public class ParkFinder implements EntryPoint {
 		return cellList;
 	}
 
-	private synchronized void retrieveParkInformation() {
+	private void retrieveParkInformation() {
 		final DialogBox message = new DialogBox();
 		final VerticalPanel msgPanel = new VerticalPanel();
 		message.add(msgPanel);
@@ -582,7 +591,7 @@ public class ParkFinder implements EntryPoint {
 		});
 	}
 	
-	private synchronized void retrieveFavoriteParkInformation() {
+	private void retrieveFavoriteParkInformation() {
 		final DialogBox message = new DialogBox();
 		final VerticalPanel msgPanel = new VerticalPanel();
 		message.add(msgPanel);
@@ -603,7 +612,7 @@ public class ParkFinder implements EntryPoint {
 				for (String id : favorites) {
 					favoriteParkList.add(id);
 				}
-				System.out.println("this should come out first");
+				loadFavoritesTabContent();
 			}
 		});
 	}
