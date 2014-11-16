@@ -187,6 +187,7 @@ public class ParkFinder implements EntryPoint {
 				parkList.clear();
 				for (Park park : parks)
 					parkList.add(park);
+				
 				loadAdminBarContent();
 				loadSearchTabContent();
 			}
@@ -212,18 +213,17 @@ public class ParkFinder implements EntryPoint {
 				favoriteParkList.clear();
 				for (String id : favorites) 
 					favoriteParkList.add(id);
+				
 				loadFavoritesTabContent();
 			}
 		});
 	}
 	
 	private void loadAdminBarContent() {
-
 		if ((loginInfo.getNickname().equals("grrraham"))||
 				(loginInfo.getNickname().equals("acie.liang"))||
 				(loginInfo.getNickname().equals("shineoutloudlol"))||
 				(loginInfo.getNickname().equals("joshparkes24"))) {
-				
 
 			Button adminButton = new Button("ADMIN", new ClickHandler() {
 				
@@ -237,6 +237,13 @@ public class ParkFinder implements EntryPoint {
 
 						@Override
 						public void onClick(ClickEvent event) {
+							
+							int widgetCount = adminPanel.getWidgetCount();
+							if (widgetCount > 1) {
+								for (int i = widgetCount - 1; i >= 1; i--)
+									adminPanel.remove(i);
+							}
+							
 							parkService.storeParkList(new AsyncCallback<Void>() {
 
 								@Override
@@ -253,11 +260,17 @@ public class ParkFinder implements EntryPoint {
 							});
 						}
 					});
-
 					
 					Button displayButton = new Button("Show Database", new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
+							
+							int widgetCount = adminPanel.getWidgetCount();
+							if (widgetCount > 1) {
+								for (int i = widgetCount - 1; i >= 1; i--)
+										adminPanel.remove(i);
+							}
+							
 							Label databaseSize = new Label("There are " + parkList.size() + " park entries in the database.");
 							Grid dataGrid = parkGrid(parkList, 10);
 							adminPanel.add(databaseSize);
@@ -301,12 +314,10 @@ public class ParkFinder implements EntryPoint {
 				field.setFocus(true);
 				field.setText("");
 
-
 				int length = symbol.length();
 				int i = 0;
 
 				if (symbol.charAt(0) >= '0' && symbol.charAt(0) <= '9') {
-
 
 					while (symbol.charAt(i) != ' ' && i + 1 < length) {
 						i++;
@@ -352,8 +363,7 @@ public class ParkFinder implements EntryPoint {
 
 		List<Park> addressMatched = new ArrayList<Park>();
 		for (Park park : parkList) {
-			if (park.getStreetName().toLowerCase()
-					.contains(street.toLowerCase())) {
+			if (park.getStreetName().toLowerCase().contains(street.toLowerCase())) {
 				addressMatched.add(park);
 			}
 		}
@@ -478,56 +488,70 @@ public class ParkFinder implements EntryPoint {
 		}
 
 		// Favourites button
-		final Button favoriteButton = new Button("Add to Favorites", new ClickHandler() {
+		final Button favoriteButton = new Button("Add to Favorites");
+		final Button removeButton = new Button("Remove from Favorites");
+		
+		favoriteButton.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(final ClickEvent event) {
+				String parkID = park.getParkID();
+				
+				if (favButtonPanel.getWidgetCount() > 2) {
+					favButtonPanel.remove(2);
+				}
+				
+				favoriteParkService.addPark(parkID, new AsyncCallback<Void>() {
 
 					@Override
-					public void onClick(final ClickEvent event) {
-						String parkID = park.getParkID();
-						favoriteParkService.addPark(parkID, new AsyncCallback<Void>() {
-
-									@Override
-									public void onFailure(Throwable caught) {
-										Label addFavoritesFailed = new Label("Error: Failed to Add " + park.getName() + " to Favorites");
-										favButtonPanel.add(addFavoritesFailed);
-									}
-
-									@Override
-									public void onSuccess(Void result) {
-										retrieveFavoriteParkInformation();
-										Label addFavoritesSuccess = new Label(park.getName() + " is saved to Favorites.");
-										favButtonPanel.add(addFavoritesSuccess);
-										((FocusWidget) event.getSource()).setEnabled(false);
-										//removeButton.setEnabled(true);
-
-									}
-								});
+					public void onFailure(Throwable caught) {
+						Label addFavoritesFailed = new Label( "Error: Failed to Add " + park.getName() + " to Favorites");
+						favButtonPanel.add(addFavoritesFailed);
 					}
-				});
-
-		final Button removeButton = new Button("Remove from Favorites", new ClickHandler() {
 
 					@Override
-					public void onClick(final ClickEvent event) {
-						String parkID = park.getParkID();
-						favoriteParkService.removePark(parkID, new AsyncCallback<Void>() {
-
-									@Override
-									public void onFailure(Throwable caught) {
-										Label removeFavoritesFailed = new Label("Error: Failed to Remove " + park.getName() + " to Favorites");
-										favButtonPanel.add(removeFavoritesFailed);
-									}
-
-									@Override
-									public void onSuccess(Void result) {
-										retrieveFavoriteParkInformation();
-										Label removeFavoritesSuccess = new Label(park.getName() + " is removed from Favorites.");
-										favButtonPanel.add(removeFavoritesSuccess);
-										((FocusWidget) event.getSource()).setEnabled(false);
-										favoriteButton.setEnabled(true);
-									}
-								});
+					public void onSuccess(Void result) {
+						favouritesTabPanel.clear();
+						retrieveFavoriteParkInformation();
+						Label addFavoritesSuccess = new Label(park.getName() + " is saved to Favorites.");
+						favButtonPanel.add(addFavoritesSuccess);
 					}
 				});
+				((FocusWidget) event.getSource()).setEnabled(false);
+				removeButton.setEnabled(true);
+			}
+		});
+
+		removeButton.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(final ClickEvent event) {
+				String parkID = park.getParkID();
+				
+				if (favButtonPanel.getWidgetCount() > 2) {
+					favButtonPanel.remove(2);
+				}
+				
+				favoriteParkService.removePark(parkID, new AsyncCallback<Void>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+						Label removeFavoritesFailed = new Label("Error: Failed to Remove " + park.getName() + " to Favorites");
+						favButtonPanel.add(removeFavoritesFailed);
+					}
+
+					@Override
+					public void onSuccess(Void result) {
+						favouritesTabPanel.clear();
+						retrieveFavoriteParkInformation();
+						Label removeFavoritesSuccess = new Label(park.getName() + " is removed from Favorites.");
+						favButtonPanel.add(removeFavoritesSuccess);
+					}
+				});
+				((FocusWidget) event.getSource()).setEnabled(false);
+				favoriteButton.setEnabled(true);
+			}
+		});
 		
 		int i = 0;
 		boolean enableAdd = true;
@@ -544,7 +568,7 @@ public class ParkFinder implements EntryPoint {
 			favoriteButton.setEnabled(false);
 			removeButton.setEnabled(true);
 		}
-
+		
 		favButtonPanel.add(favoriteButton);
 		favButtonPanel.add(removeButton);
 		allInfo.add(favButtonPanel);
