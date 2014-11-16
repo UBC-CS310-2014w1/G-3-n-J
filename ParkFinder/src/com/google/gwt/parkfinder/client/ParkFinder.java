@@ -28,12 +28,17 @@ import com.google.gwt.parkfinder.server.Park;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.cell.client.ClickableTextCell;
+import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.geolocation.client.Geolocation;
+import com.google.gwt.geolocation.client.Position;
+import com.google.gwt.geolocation.client.Position.Coordinates;
+import com.google.gwt.geolocation.client.PositionError;
 import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -63,6 +68,8 @@ import com.google.gwt.dom.client.Style.Unit;
  */
 public class ParkFinder implements EntryPoint {
 	private HorizontalPanel mapPanel = new HorizontalPanel();
+	private double userLat = 0;
+	private double userLng = 0;
 	public MapWidget map;
 
 	private TabPanel tabPanel = new TabPanel();
@@ -106,21 +113,16 @@ public class ParkFinder implements EntryPoint {
 
 	private void loadParkFinder() {
 		signOutLink.setHref(loginInfo.getLogoutUrl());
+		
+		retrieveParkInformation();
+		getUserLocation();
 
-		/*
-		 * Asynchronously loads the Maps API.
-		 * 
-		 * The first parameter should be a valid Maps API Key to deploy this
-		 * application on a public server, but a blank key will work for an
-		 * application served from local host.
-		 */
 		Maps.loadMapsApi("", "2", false, new Runnable() {
 			public void run() {
 				buildMapUi();
 			}
 		});
-
-		retrieveParkInformation();
+		
 		initAdminBar();
 		initTabPanels();
 		initTabs();
@@ -138,24 +140,15 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void buildMapUi() {
-		LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
-
-		map = new MapWidget(mapCenter, 12);
+		LatLng defaultCenter = LatLng.newInstance(49.240978,-123.112028);
+		map = new MapWidget(defaultCenter, 12);
+		
 		map.setSize("100%", "100%");
-
-		// Add some controls for the zoom level
 		map.addControl(new LargeMapControl());
-
-		// Add a marker
-		map.addOverlay(new Marker(mapCenter));
-
-		// Add an info window to highlight a point of interest
-		map.getInfoWindow().open(map.getCenter(), new InfoWindowContent("Ravine Park"));
 
 		final DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
 		dock.addNorth(map, 700);
 
-		// Add the map to the HTML host page
 		RootPanel.get("mapPanel").add(dock);
 	}
 
@@ -705,6 +698,26 @@ public class ParkFinder implements EntryPoint {
 			}
 		});
 	}
+	
+	private void getUserLocation() {
+		Geolocation userLoc = Geolocation.getIfSupported();
+		userLoc.getCurrentPosition(new Callback<Position, PositionError>() {
+
+			@Override
+			public void onFailure(PositionError reason) {
+				// Do nothing
+			}
+
+			@Override
+			public void onSuccess(Position result) {
+				// TODO Auto-generated method stub
+				Coordinates loc = result.getCoordinates();
+				userLat = loc.getLatitude();
+				userLng = loc.getLongitude();
+			}
+			
+		});
+	}
 
 	private void newMapMarker(final Park park) {
 		String latLonString = park.getGoogleMapDest();
@@ -715,8 +728,24 @@ public class ParkFinder implements EntryPoint {
 		marker.addMarkerClickHandler(new MarkerClickHandler() {
 			@Override
 			public void onClick(MarkerClickEvent event) {
-				// TODO Do something when marker is clicked. Perhaps display park name.
-				map.getInfoWindow().open(markerLocation,new InfoWindowContent(park.getName()));
+				if (userLat != 0 && userLng != 0) {
+					VerticalPanel temp = new VerticalPanel();
+					
+					LatLng parkLoc = LatLng.newInstance(park.getLat(), park.getLon());
+					LatLng userLoc = LatLng.newInstance(userLat, userLng);
+					double distance = parkLoc.distanceFrom(userLoc);
+					// Conversion to kilometers
+					distance = distance / 1000;
+					Label nameLabel = new Label(park.getName());
+					Label distLabel = new Label("Approximately " + Integer.toString((int)distance) + "km away from you.");
+					
+					temp.add(nameLabel);
+					temp.add(distLabel);
+					
+					map.getInfoWindow().open(markerLocation, new InfoWindowContent(temp));
+				} else {
+					map.getInfoWindow().open(markerLocation, new InfoWindowContent(park.getName()));
+				}
 			}
 		});
 		map.addOverlay(marker);
