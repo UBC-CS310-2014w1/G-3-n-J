@@ -6,6 +6,7 @@ import static com.google.gwt.dom.client.BrowserEvents.MOUSEOVER;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.google.gwt.maps.client.InfoWindowContent;
@@ -23,21 +24,28 @@ import com.google.gwt.parkfinder.client.ParkService;
 import com.google.gwt.parkfinder.client.ParkServiceAsync;
 import com.google.gwt.parkfinder.client.FavoriteParkService;
 import com.google.gwt.parkfinder.client.FavoriteParkServiceAsync;
+import com.google.gwt.parkfinder.filter.NeighbourhoodFilter;
 import com.google.gwt.parkfinder.server.Park;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.cell.client.ClickableTextCell;
+import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.geolocation.client.Geolocation;
+import com.google.gwt.geolocation.client.Position;
+import com.google.gwt.geolocation.client.Position.Coordinates;
+import com.google.gwt.geolocation.client.PositionError;
 import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FocusWidget;
@@ -62,6 +70,8 @@ import com.google.gwt.dom.client.Style.Unit;
  */
 public class ParkFinder implements EntryPoint {
 	private HorizontalPanel mapPanel = new HorizontalPanel();
+	private double userLat = 0;
+	private double userLng = 0;
 	public MapWidget map;
 
 	private TabPanel tabPanel = new TabPanel();
@@ -105,27 +115,27 @@ public class ParkFinder implements EntryPoint {
 
 	private void loadParkFinder() {
 		signOutLink.setHref(loginInfo.getLogoutUrl());
+		
+		retrieveParkInformation();
+		getUserLocation();
 
-		/*
-		 * Asynchronously loads the Maps API.
-		 * 
-		 * The first parameter should be a valid Maps API Key to deploy this
-		 * application on a public server, but a blank key will work for an
-		 * application served from local host.
-		 */
 		Maps.loadMapsApi("", "2", false, new Runnable() {
 			public void run() {
 				buildMapUi();
 			}
 		});
 
+
 		// Sequence Map (set up this way to avoid synchronization problem)
 		// retrieveParkInformation() -> loadAdminBarContent()
 		//							 -> loadSearchTabContent()
 		// retrieveFavoriteParkInformation() -> loadFavoriteTabContent()
+
 		initTabs();
 		retrieveParkInformation();
 		retrieveFavoriteParkInformation();
+		
+		testNeighbourhoodFilterTab();
 
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
@@ -140,24 +150,15 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void buildMapUi() {
-		LatLng mapCenter = LatLng.newInstance(49.240902, -123.155935);
-
-		map = new MapWidget(mapCenter, 12);
+		LatLng defaultCenter = LatLng.newInstance(49.240978,-123.112028);
+		map = new MapWidget(defaultCenter, 12);
+		
 		map.setSize("100%", "100%");
-
-		// Add some controls for the zoom level
 		map.addControl(new LargeMapControl());
-
-		// Add a marker
-		map.addOverlay(new Marker(mapCenter));
-
-		// Add an info window to highlight a point of interest
-		map.getInfoWindow().open(map.getCenter(), new InfoWindowContent("Ravine Park"));
 
 		final DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
 		dock.addNorth(map, 700);
 
-		// Add the map to the HTML host page
 		RootPanel.get("mapPanel").add(dock);
 	}
 	
@@ -294,6 +295,99 @@ public class ParkFinder implements EntryPoint {
 
 		RootPanel.get("signInOut").add(signOutLink);
 	}
+
+	private void testNeighbourhoodFilterTab() {
+		// Created to temporarily test neighbourhood filtering
+		// TODO: Sort results alphabetically, add scrollable list, implement neighbourhood filtering into search tab somehow.
+		final VerticalPanel vPanel = new VerticalPanel(); 
+		tabPanel.add(vPanel, "Neighbourhood Filter");
+		
+		final Tree neighbourhoodTree = new Tree();
+		
+		TreeItem neighbourhoods = new TreeItem();
+		neighbourhoods.setText("Select your preferred heighbourhoods:");
+		
+		// Check box for all 
+		CheckBox downtown = new CheckBox("Downtown");
+		neighbourhoods.addItem(downtown);
+		CheckBox arbutusRidge = new CheckBox("Arbutus Ridge");
+		neighbourhoods.addItem(arbutusRidge);
+		CheckBox dunbar = new CheckBox("Dunbar-Southlands");
+		neighbourhoods.addItem(dunbar);
+		CheckBox fairview = new CheckBox("Fairview");
+		neighbourhoods.addItem(fairview);
+		CheckBox grandview = new CheckBox("Grandview-Woodland");
+		neighbourhoods.addItem(grandview);
+		CheckBox hastings = new CheckBox("Hastings-Sunrise");
+		neighbourhoods.addItem(hastings);
+		CheckBox kensignton = new CheckBox("Kensington-Cedar Cottage");
+		neighbourhoods.addItem(kensignton);
+		CheckBox kerrisdale = new CheckBox("Kerrisdale");
+		neighbourhoods.addItem(kerrisdale);
+		CheckBox killanary = new CheckBox("Killarney");
+		neighbourhoods.addItem(killanary);
+		CheckBox kits = new CheckBox("Kitsilano");
+		neighbourhoods.addItem(kits);
+		CheckBox marpole = new CheckBox("Marpole");
+		neighbourhoods.addItem(marpole);
+		CheckBox mp = new CheckBox("Mount Pleasant");
+		neighbourhoods.addItem(mp);
+		CheckBox oak = new CheckBox("Oakridge");
+		neighbourhoods.addItem(oak);
+		CheckBox renfrew = new CheckBox("Renfrew-Collingwood");
+		neighbourhoods.addItem(renfrew);
+		CheckBox riley = new CheckBox("Riley-Little Mountain");
+		neighbourhoods.addItem(riley);
+		CheckBox shaughnessy = new CheckBox("Shaughnessy");
+		neighbourhoods.addItem(shaughnessy);
+		CheckBox sc = new CheckBox("South Cambie");
+		neighbourhoods.addItem(sc);
+		CheckBox strathcona = new CheckBox("Strathcona");
+		neighbourhoods.addItem(strathcona);
+		CheckBox sunset = new CheckBox("Sunset");
+		neighbourhoods.addItem(sunset);
+		CheckBox victoria = new CheckBox("Victoria-Fraserview");
+		neighbourhoods.addItem(victoria);
+		CheckBox we = new CheckBox("West End");
+		neighbourhoods.addItem(we);
+		CheckBox wpg = new CheckBox("West Point Grey");
+		neighbourhoods.addItem(wpg);
+		
+		
+		neighbourhoodTree.addItem(neighbourhoods);
+		vPanel.add(neighbourhoodTree);
+		
+		Button searchNeighbourhoodBtn = new Button("Search", new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (vPanel.getWidgetCount() > 2)
+					vPanel.remove(2);
+				
+				TreeItem neighbourhoodList = neighbourhoodTree.getItem(0);
+				int numNeighbourhoods = neighbourhoodList.getChildCount();
+				List<String> chosenNBH = new LinkedList<String>();
+				for (int i = 0; i < numNeighbourhoods; i++) {
+					CheckBox box = (CheckBox) neighbourhoodList.getChild(i).getWidget();
+					if (box.getValue())
+						chosenNBH.add(neighbourhoodList.getChild(i).getText());
+				}
+				
+				NeighbourhoodFilter nbhFilter = new NeighbourhoodFilter(chosenNBH);
+				if (parkList != null) {
+				List<Park> filteredList = nbhFilter.filter(parkList);
+				CellList<String> filtered = parkCellList(filteredList);
+				vPanel.add(filtered);
+				}
+				
+			}
+			
+		});
+		
+		vPanel.add(searchNeighbourhoodBtn);
+		
+		
+	}
+
 
 	private void loadSearchTabContent() {
 		Label searchLabel = new Label("Search by Name or Address");
@@ -636,6 +730,26 @@ public class ParkFinder implements EntryPoint {
 		cellList.setRowData(0, parkNames);
 		return cellList;
 	}
+	
+	private void getUserLocation() {
+		Geolocation userLoc = Geolocation.getIfSupported();
+		userLoc.getCurrentPosition(new Callback<Position, PositionError>() {
+
+			@Override
+			public void onFailure(PositionError reason) {
+				// Do nothing
+			}
+
+			@Override
+			public void onSuccess(Position result) {
+				// TODO Auto-generated method stub
+				Coordinates loc = result.getCoordinates();
+				userLat = loc.getLatitude();
+				userLng = loc.getLongitude();
+			}
+			
+		});
+	}
 
 	private void newMapMarker(final Park park) {
 		String latLonString = park.getGoogleMapDest();
@@ -646,9 +760,25 @@ public class ParkFinder implements EntryPoint {
 		marker.addMarkerClickHandler(new MarkerClickHandler() {
 			@Override
 			public void onClick(MarkerClickEvent event) {
-				// TODO Do something when marker is clicked. 
-				// Display the park name and the distance from current address, if given.
-				map.getInfoWindow().open(markerLocation,new InfoWindowContent(park.getName()));
+
+				if (userLat != 0 && userLng != 0) {
+					VerticalPanel temp = new VerticalPanel();
+					
+					LatLng parkLoc = LatLng.newInstance(park.getLat(), park.getLon());
+					LatLng userLoc = LatLng.newInstance(userLat, userLng);
+					double distance = parkLoc.distanceFrom(userLoc);
+					// Conversion to kilometers
+					distance = distance / 1000;
+					Label nameLabel = new Label(park.getName());
+					Label distLabel = new Label("Approximately " + Integer.toString((int)distance) + "km away from you.");
+					
+					temp.add(nameLabel);
+					temp.add(distLabel);
+					
+					map.getInfoWindow().open(markerLocation, new InfoWindowContent(temp));
+				} else {
+					map.getInfoWindow().open(markerLocation, new InfoWindowContent(park.getName()));
+				}
 			}
 		});
 		map.addOverlay(marker);
