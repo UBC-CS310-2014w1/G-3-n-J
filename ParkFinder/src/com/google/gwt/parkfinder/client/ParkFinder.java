@@ -226,9 +226,7 @@ public class ParkFinder implements EntryPoint {
 		tabPanel.add(searchTabPanel, "Search");
 		tabPanel.add(favouritesTabPanel, "Favourites");
 		tabPanel.selectTab(0);
-		
-		// TODO: Remove neighbourhood filtering tab once implemented into search tab.
-		testNeighbourhoodFilterTab();
+
 	}
 
 	private void initTabPanels() {
@@ -236,97 +234,7 @@ public class ParkFinder implements EntryPoint {
 		loadFavoritesTabContent();
 	}
 
-	private void testNeighbourhoodFilterTab() {
-		// Created to temporarily test neighbourhood filtering
-		// TODO: Sort results alphabetically, add scrollable list, implement neighbourhood filtering into search tab somehow.
-		final VerticalPanel vPanel = new VerticalPanel(); 
-		tabPanel.add(vPanel, "Neighbourhood Filter");
-		
-		final Tree neighbourhoodTree = new Tree();
-		
-		TreeItem neighbourhoods = new TreeItem();
-		neighbourhoods.setText("Select your preferred heighbourhoods:");
-		
-		// Check box for all 
-		CheckBox downtown = new CheckBox("Downtown");
-		neighbourhoods.addItem(downtown);
-		CheckBox arbutusRidge = new CheckBox("Arbutus Ridge");
-		neighbourhoods.addItem(arbutusRidge);
-		CheckBox dunbar = new CheckBox("Dunbar-Southlands");
-		neighbourhoods.addItem(dunbar);
-		CheckBox fairview = new CheckBox("Fairview");
-		neighbourhoods.addItem(fairview);
-		CheckBox grandview = new CheckBox("Grandview-Woodland");
-		neighbourhoods.addItem(grandview);
-		CheckBox hastings = new CheckBox("Hastings-Sunrise");
-		neighbourhoods.addItem(hastings);
-		CheckBox kensignton = new CheckBox("Kensington-Cedar Cottage");
-		neighbourhoods.addItem(kensignton);
-		CheckBox kerrisdale = new CheckBox("Kerrisdale");
-		neighbourhoods.addItem(kerrisdale);
-		CheckBox killanary = new CheckBox("Killarney");
-		neighbourhoods.addItem(killanary);
-		CheckBox kits = new CheckBox("Kitsilano");
-		neighbourhoods.addItem(kits);
-		CheckBox marpole = new CheckBox("Marpole");
-		neighbourhoods.addItem(marpole);
-		CheckBox mp = new CheckBox("Mount Pleasant");
-		neighbourhoods.addItem(mp);
-		CheckBox oak = new CheckBox("Oakridge");
-		neighbourhoods.addItem(oak);
-		CheckBox renfrew = new CheckBox("Renfrew-Collingwood");
-		neighbourhoods.addItem(renfrew);
-		CheckBox riley = new CheckBox("Riley-Little Mountain");
-		neighbourhoods.addItem(riley);
-		CheckBox shaughnessy = new CheckBox("Shaughnessy");
-		neighbourhoods.addItem(shaughnessy);
-		CheckBox sc = new CheckBox("South Cambie");
-		neighbourhoods.addItem(sc);
-		CheckBox strathcona = new CheckBox("Strathcona");
-		neighbourhoods.addItem(strathcona);
-		CheckBox sunset = new CheckBox("Sunset");
-		neighbourhoods.addItem(sunset);
-		CheckBox victoria = new CheckBox("Victoria-Fraserview");
-		neighbourhoods.addItem(victoria);
-		CheckBox we = new CheckBox("West End");
-		neighbourhoods.addItem(we);
-		CheckBox wpg = new CheckBox("West Point Grey");
-		neighbourhoods.addItem(wpg);
-		
-		
-		neighbourhoodTree.addItem(neighbourhoods);
-		vPanel.add(neighbourhoodTree);
-		
-		Button searchNeighbourhoodBtn = new Button("Search", new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				if (vPanel.getWidgetCount() > 2)
-					vPanel.remove(2);
-				
-				TreeItem neighbourhoodList = neighbourhoodTree.getItem(0);
-				int numNeighbourhoods = neighbourhoodList.getChildCount();
-				List<String> chosenNBH = new LinkedList<String>();
-				for (int i = 0; i < numNeighbourhoods; i++) {
-					CheckBox box = (CheckBox) neighbourhoodList.getChild(i).getWidget();
-					if (box.getValue())
-						chosenNBH.add(neighbourhoodList.getChild(i).getText());
-				}
-				
-				NeighbourhoodFilter nbhFilter = new NeighbourhoodFilter(chosenNBH);
-				if (parkList != null) {
-				List<Park> filteredList = nbhFilter.filter(parkList);
-				CellList<String> filtered = parkCellList(filteredList);
-				vPanel.add(filtered);
-				}
-				
-			}
-			
-		});
-		
-		vPanel.add(searchNeighbourhoodBtn);
-		
-		
-	}
+	
 
 	private void loadSearchTabContent() {
 		Label searchLabel = new Label("Search by Name or Address");
