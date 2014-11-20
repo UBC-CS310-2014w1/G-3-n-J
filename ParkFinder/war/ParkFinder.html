@@ -23,10 +23,10 @@
 <!-- If you add any GWT meta tags, they must   -->
 <!-- be added before this line.                -->
 <!--                                           -->
+<script src="https://apis.google.com/js/platform.js" async defer></script>
 <script type="text/javascript" language="javascript"
 	src="parkfinder/parkfinder.nocache.js"></script>
-<script src="http://maps.google.com/maps?gwt=1&file=api&v=2.148&sensor=false"></script>	
-	
+<script src="http://maps.google.com/maps?gwt=1&file=api&v=2.148&sensor=false"></script>
 </head>
 
 <!--                                           -->
@@ -53,9 +53,11 @@
 
 	<h1>ParkFinder</h1>
 	
-	<div id="signInOut"></div>
+	<div id="signInOut"></div>	
 	<div id="searchContainer"></div>
+	<div id="nav">
+		<div class="g-plus" data-action="share" data-width="450" data-height="24"></div>
+	</div>
 	<div id="mapPanel"></div>
-
 </body>
 </html>
