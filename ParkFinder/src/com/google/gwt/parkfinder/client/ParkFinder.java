@@ -25,7 +25,6 @@ import com.google.gwt.parkfinder.client.ParkService;
 import com.google.gwt.parkfinder.client.ParkServiceAsync;
 import com.google.gwt.parkfinder.client.FavoriteParkService;
 import com.google.gwt.parkfinder.client.FavoriteParkServiceAsync;
-import com.google.gwt.parkfinder.filter.NeighbourhoodFilter;
 import com.google.gwt.parkfinder.server.Park;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
@@ -140,8 +139,6 @@ public class ParkFinder implements EntryPoint {
 		retrieveParkInformation();
 		retrieveFavoriteParkInformation();
 		
-		testNeighbourhoodFilterTab();
-
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
 	}
@@ -302,93 +299,6 @@ public class ParkFinder implements EntryPoint {
 		}
 
 		RootPanel.get("signInOut").add(signOutLink);
-	}
-
-	private void testNeighbourhoodFilterTab() {
-		// Created to temporarily test neighbourhood filtering
-		// TODO: Sort results alphabetically, add scrollable list, implement neighbourhood filtering into search tab somehow.
-		ScrollPanel nbhFilterTab = new ScrollPanel();
-		nbhFilterTab.setHeight("700px");
-		
-		final VerticalPanel vPanel = new VerticalPanel(); 
-		
-		final Tree neighbourhoodTree = new Tree();
-		
-		TreeItem neighbourhoods = new TreeItem();
-		neighbourhoods.setText("Select your preferred heighbourhoods:");
-		
-		ArrayList<String> neighbourhoodNames = getNeighbourhoodNames();
-		
-		for (String nbh : neighbourhoodNames) {
-			CheckBox check = new CheckBox(nbh);
-			neighbourhoods.addItem(check);
-		}
-		
-		neighbourhoodTree.addItem(neighbourhoods);
-		vPanel.add(neighbourhoodTree);
-		
-		Button searchNeighbourhoodBtn = new Button("Search", new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				if (vPanel.getWidgetCount() > 2) {
-					vPanel.remove(2);
-					map.clearOverlays();
-				}
-				
-				TreeItem neighbourhoodList = neighbourhoodTree.getItem(0);
-				int numNeighbourhoods = neighbourhoodList.getChildCount();
-				List<String> chosenNBH = new LinkedList<String>();
-				for (int i = 0; i < numNeighbourhoods; i++) {
-					CheckBox box = (CheckBox) neighbourhoodList.getChild(i).getWidget();
-					if (box.getValue())
-						chosenNBH.add(neighbourhoodList.getChild(i).getText());
-				}
-				
-				NeighbourhoodFilter nbhFilter = new NeighbourhoodFilter(chosenNBH);
-				if (parkList != null) {
-				List<Park> filteredList = nbhFilter.filter(parkList);
-				newMapMarker(filteredList);
-				CellList<String> filtered = parkCellList(filteredList);
-				vPanel.add(filtered);
-				}
-				
-			}
-			
-		});
-		
-		vPanel.add(searchNeighbourhoodBtn);
-		nbhFilterTab.add(vPanel);
-		tabPanel.add(nbhFilterTab, "Neighbourhood Filter");
-		
-	}
-
-
-	private ArrayList<String> getNeighbourhoodNames() {
-		ArrayList<String> neighbourhoods = new ArrayList<String>();
-		neighbourhoods.add("Downtown");
-		neighbourhoods.add("Arbutus Ridge");
-		neighbourhoods.add("Dunbar-Southlands");
-		neighbourhoods.add("Fairview");
-		neighbourhoods.add("Grandview-Woodland");
-		neighbourhoods.add("Hastings-Sunrise");
-		neighbourhoods.add("Kensington-Cedar Cottage");
-		neighbourhoods.add("Kerrisdale");
-		neighbourhoods.add("Killarney");
-		neighbourhoods.add("Kitsilano");
-		neighbourhoods.add("Marpole");
-		neighbourhoods.add("Mount Pleasant");
-		neighbourhoods.add("Oakridge");
-		neighbourhoods.add("Renfrew-Collingwood");
-		neighbourhoods.add("Riley-Little Mountain");
-		neighbourhoods.add("Shaughnessy");
-		neighbourhoods.add("South Cambie");
-		neighbourhoods.add("Strathcona");
-		neighbourhoods.add("Sunset");
-		neighbourhoods.add("Victoria-Fraserview");
-		neighbourhoods.add("West End");
-		neighbourhoods.add("West Point Grey");
-		
-		return neighbourhoods;
 	}
 
 	private void loadSearchTabContent() {

@@ -17,6 +17,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
@@ -28,11 +29,12 @@ public class FilterPanel extends VerticalPanel {
 	private ParkFinder parkFinder;
 	//private CheckBox washroomCheckBox = new CheckBox("Washrooms");
 	//private CheckBox playgroundCheckBox = new CheckBox("Playgrounds");
-
+	//TODO try to remove neighbourhoodPanel
 	private VerticalPanel neighbourhoodPanel = new VerticalPanel();
 	private Tree neighbourhoodTree = new Tree();
 
-	private VerticalPanel parkDisplay = new VerticalPanel();
+	private ScrollPanel parkDisplay = new ScrollPanel();
+
 	private Grid parkGrid;
 	
 	private class FilterCheckBox extends CheckBox{
@@ -67,26 +69,6 @@ public class FilterPanel extends VerticalPanel {
 		
 		ParkFilter washroomFilter = new WashroomFilter();
 		FilterCheckBox washroomCheckBox = new FilterCheckBox("Washrooms", this, washroomFilter);
-//
-//		washroomCheckBox.setValue(false);
-//		washroomCheckBox.addClickHandler(new ClickHandler() {
-//			public void onClick(ClickEvent event) {
-//				if (washroomCheckBox.getValue()) {
-//					washroomCheckBox.setValue(true);
-//					filters.add(new WashroomFilter());
-//					refresh();
-//				} else {
-//					washroomCheckBox.setValue(false);
-//					for (ParkFilter f: filters){
-//						if (f.getClass() == WashroomFilter.class){
-//							filters.remove(f);
-//							refresh();
-//							break;
-//						}
-//					}
-//				}
-//			}
-//		});
 		this.add(washroomCheckBox);
 		
 		ParkFilter playgroundFilter = new PlaygroundFilter();
@@ -115,61 +97,68 @@ public class FilterPanel extends VerticalPanel {
 
 
 
-		TreeItem neighbourhoods = new TreeItem();
-		neighbourhoods.setText("Neighbourhoods:");
-		CheckBox allNeighbourhoods = new CheckBox("All");
-		neighbourhoods.addItem(allNeighbourhoods);
-		//ParkFilter downtownNeighbourhoodFilter = new NeighbourhoodFilter("Downtown");
-		CheckBox downtown = new CheckBox("Downtown");
-		neighbourhoods.addItem(downtown);
-		CheckBox arbutusRidge = new CheckBox("Arbutus Ridge");
-		neighbourhoods.addItem(arbutusRidge);
-		CheckBox dunbar = new CheckBox("Dunbar-Southlands");
-		neighbourhoods.addItem(dunbar);
-		CheckBox fairview = new CheckBox("Fairview");
-		neighbourhoods.addItem(fairview);
-		CheckBox grandview = new CheckBox("Grandview-Woodland");
-		neighbourhoods.addItem(grandview);
-		CheckBox hastings = new CheckBox("Hastings-Sunrise");
-		neighbourhoods.addItem(hastings);
-		CheckBox kensignton = new CheckBox("Kensington-Cedar Cottage");
-		neighbourhoods.addItem(kensignton);
-		CheckBox kerrisdale = new CheckBox("Kerrisdale");
-		neighbourhoods.addItem(kerrisdale);
-		CheckBox killanary = new CheckBox("Killarney");
-		neighbourhoods.addItem(killanary);
-		CheckBox kits = new CheckBox("Kitsilano");
-		neighbourhoods.addItem(kits);
-		CheckBox marpole = new CheckBox("Marpole");
-		neighbourhoods.addItem(marpole);
-		CheckBox mp = new CheckBox("Mount Pleasant");
-		neighbourhoods.addItem(mp);
-		CheckBox oak = new CheckBox("Oakridge");
-		neighbourhoods.addItem(oak);
-		CheckBox renfrew = new CheckBox("Renfrew-Collingwood");
-		neighbourhoods.addItem(renfrew);
-		CheckBox riley = new CheckBox("Riley-Little Mountain");
-		neighbourhoods.addItem(riley);
-		CheckBox shaughnessy = new CheckBox("Shaughnessy");
-		neighbourhoods.addItem(shaughnessy);
-		CheckBox sc = new CheckBox("South Cambie");
-		neighbourhoods.addItem(sc);
-		CheckBox strathcona = new CheckBox("Strathcona");
-		neighbourhoods.addItem(strathcona);
-		CheckBox sunset = new CheckBox("Sunset");
-		neighbourhoods.addItem(sunset);
-		CheckBox victoria = new CheckBox("Victoria-Fraserview");
-		neighbourhoods.addItem(victoria);
-		CheckBox we = new CheckBox("West End");
-		neighbourhoods.addItem(we);
-		CheckBox wpg = new CheckBox("West Point Grey");
-		neighbourhoods.addItem(wpg);
+			TreeItem neighbourhoods = new TreeItem();
+			neighbourhoods.setText("Neighbourhoods");
+			
+			//ArrayList<String> neighbourhoodNames = getNeighbourhoodNames();
+//			
+//			for (String nbh : neighbourhoodNames) {
+//				CheckBox check = new CheckBox(nbh);
+//				neighbourhoods.addItem(check);
+//			}
+			
+
+						
+			
+			neighbourhoodTree.addItem(neighbourhoods);
+			neighbourhoodPanel.add(neighbourhoodTree);
+			//TODO See about remove neighbourhoodPanel
+			
+			Button searchNeighbourhoodBtn = new Button("Search", new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					if (neighbourhoodPanel.getWidgetCount() > 2) {
+						neighbourhoodPanel.remove(2);
+						map.clearOverlays();
+					}
+					
+					TreeItem neighbourhoodList = neighbourhoodTree.getItem(0);
+					int numNeighbourhoods = neighbourhoodList.getChildCount();
+					List<String> chosenNBH = new LinkedList<String>();
+					for (int i = 0; i < numNeighbourhoods; i++) {
+						CheckBox box = (CheckBox) neighbourhoodList.getChild(i).getWidget();
+						if (box.getValue())
+							chosenNBH.add(neighbourhoodList.getChild(i).getText());
+					}
+					
+					NeighbourhoodFilter nbhFilter = new NeighbourhoodFilter(chosenNBH);
+					if (parkList != null) {
+					List<Park> filteredList = nbhFilter.filter(parkList);
+					newMapMarker(filteredList);
+					CellList<String> filtered = parkCellList(filteredList);
+					vPanel.add(filtered);
+					}
+					
+				}
+				
+			});
+			
+			vPanel.add(searchNeighbourhoodBtn);
+			nbhFilterTab.add(vPanel);
+			
+//			tabPanel.add(nbhFilterTab, "Neighbourhood Filter");
+			
+		
 
 
-		neighbourhoodTree.addItem(neighbourhoods);
+//		neighbourhoodTree.addItem(neighbourhoods);
 		neighbourhoodPanel.add(neighbourhoodTree);
 		this.add(neighbourhoodPanel);
 
+		
+
+		ScrollPanel nbhFilterTab = new ScrollPanel();
+		nbhFilterTab.setHeight("700px");
 		this.add(parkDisplay);
 		//refresh();
 	}
@@ -213,5 +202,7 @@ public class FilterPanel extends VerticalPanel {
 	public void add(ParkFilter filter) {
 		filters.add(filter);
 	}
+	
+	
 
 }
