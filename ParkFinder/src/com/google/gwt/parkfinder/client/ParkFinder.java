@@ -173,6 +173,7 @@ public class ParkFinder implements EntryPoint {
 		searchTabScrollPanel.setHeight(Double.toString(MAP_HEIGHT - 45)+"px");
 		searchTabScrollPanel.add(searchTabPanel);
 		tabPanel.add(favouritesTabPanel, "Favourites");
+		tabPanel.add(filterPanel, "Filter");
 		tabPanel.selectTab(0);
 	}
 
@@ -399,6 +400,7 @@ public class ParkFinder implements EntryPoint {
 		searchPanel.add(field);
 		searchPanel.add(search);
 		searchTabPanel.add(searchPanel);
+		
 
 		field.setFocus(true);
 
