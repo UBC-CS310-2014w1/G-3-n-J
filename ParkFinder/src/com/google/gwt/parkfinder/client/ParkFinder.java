@@ -87,6 +87,8 @@ public class ParkFinder implements EntryPoint {
 	private Label loginLabel = new Label("Please sign in to your Google Account to access the ParkFinder application.");
 	private Anchor signInLink = new Anchor("Sign In");
 	private Anchor signOutLink = new Anchor("Sign Out");
+	
+	private FilterPanel filterPanel = new FilterPanel(this); 
 
 	private List<Park> parkList = new ArrayList<Park>();
 	private List<String> favoriteParkList = new ArrayList<String>();
@@ -689,6 +691,13 @@ public class ParkFinder implements EntryPoint {
 		
 		return dataGrid;
 	}
+	
+	public Grid displayParkList() {
+		List<Park> displayParkList;
+		displayParkList = filterPanel.filter(parkList);
+		return parkGrid(displayParkList, -1);
+	}
+
 
 	private CellList<String> parkCellList(final List<Park> parks) {
 		final Cell<String> buttonCell = new ClickableTextCell() {

@@ -28,7 +28,6 @@
   <source path='server'/>
   <source path='filter'/>
   
-  
   <!--  Inherited for maps -->
   <inherits name='com.google.gwt.maps.GoogleMaps' />
   
