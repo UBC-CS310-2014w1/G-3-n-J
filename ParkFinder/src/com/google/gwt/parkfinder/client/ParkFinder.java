@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeMap;
 
 import com.google.gwt.maps.client.InfoWindowContent;
 import com.google.gwt.maps.client.MapWidget;
@@ -61,6 +62,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.view.client.Range;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Unit;
@@ -72,10 +74,12 @@ public class ParkFinder implements EntryPoint {
 	private HorizontalPanel mapPanel = new HorizontalPanel();
 	private double userLat = 0;
 	private double userLng = 0;
+	private double MAP_HEIGHT = Window.getClientHeight() - 100;
 	public MapWidget map;
 
 	private TabPanel tabPanel = new TabPanel();
 	private VerticalPanel searchTabPanel = new VerticalPanel();
+	private ScrollPanel searchTabScrollPanel = new ScrollPanel();
 	private VerticalPanel favouritesTabPanel = new VerticalPanel();
 	
 	private VerticalPanel loginPanel = new VerticalPanel();
@@ -116,7 +120,6 @@ public class ParkFinder implements EntryPoint {
 	private void loadParkFinder() {
 		signOutLink.setHref(loginInfo.getLogoutUrl());
 		
-		retrieveParkInformation();
 		getUserLocation();
 
 		Maps.loadMapsApi("", "2", false, new Runnable() {
@@ -157,14 +160,16 @@ public class ParkFinder implements EntryPoint {
 		map.addControl(new LargeMapControl());
 
 		final DockLayoutPanel dock = new DockLayoutPanel(Unit.PX);
-		dock.addNorth(map, 700);
+		dock.addNorth(map, MAP_HEIGHT);
 
 		RootPanel.get("mapPanel").add(dock);
 	}
 	
 	private void initTabs() {
 		tabPanel.setWidth("100%");
-		tabPanel.add(searchTabPanel, "Search");
+		tabPanel.add(searchTabScrollPanel, "Search");
+		searchTabScrollPanel.setHeight(Double.toString(MAP_HEIGHT - 45)+"px");
+		searchTabScrollPanel.add(searchTabPanel);
 		tabPanel.add(favouritesTabPanel, "Favourites");
 		tabPanel.selectTab(0);
 	}
@@ -299,60 +304,22 @@ public class ParkFinder implements EntryPoint {
 	private void testNeighbourhoodFilterTab() {
 		// Created to temporarily test neighbourhood filtering
 		// TODO: Sort results alphabetically, add scrollable list, implement neighbourhood filtering into search tab somehow.
+		ScrollPanel nbhFilterTab = new ScrollPanel();
+		nbhFilterTab.setHeight("700px");
+		
 		final VerticalPanel vPanel = new VerticalPanel(); 
-		tabPanel.add(vPanel, "Neighbourhood Filter");
 		
 		final Tree neighbourhoodTree = new Tree();
 		
 		TreeItem neighbourhoods = new TreeItem();
 		neighbourhoods.setText("Select your preferred heighbourhoods:");
 		
-		// Check box for all 
-		CheckBox downtown = new CheckBox("Downtown");
-		neighbourhoods.addItem(downtown);
-		CheckBox arbutusRidge = new CheckBox("Arbutus Ridge");
-		neighbourhoods.addItem(arbutusRidge);
-		CheckBox dunbar = new CheckBox("Dunbar-Southlands");
-		neighbourhoods.addItem(dunbar);
-		CheckBox fairview = new CheckBox("Fairview");
-		neighbourhoods.addItem(fairview);
-		CheckBox grandview = new CheckBox("Grandview-Woodland");
-		neighbourhoods.addItem(grandview);
-		CheckBox hastings = new CheckBox("Hastings-Sunrise");
-		neighbourhoods.addItem(hastings);
-		CheckBox kensignton = new CheckBox("Kensington-Cedar Cottage");
-		neighbourhoods.addItem(kensignton);
-		CheckBox kerrisdale = new CheckBox("Kerrisdale");
-		neighbourhoods.addItem(kerrisdale);
-		CheckBox killanary = new CheckBox("Killarney");
-		neighbourhoods.addItem(killanary);
-		CheckBox kits = new CheckBox("Kitsilano");
-		neighbourhoods.addItem(kits);
-		CheckBox marpole = new CheckBox("Marpole");
-		neighbourhoods.addItem(marpole);
-		CheckBox mp = new CheckBox("Mount Pleasant");
-		neighbourhoods.addItem(mp);
-		CheckBox oak = new CheckBox("Oakridge");
-		neighbourhoods.addItem(oak);
-		CheckBox renfrew = new CheckBox("Renfrew-Collingwood");
-		neighbourhoods.addItem(renfrew);
-		CheckBox riley = new CheckBox("Riley-Little Mountain");
-		neighbourhoods.addItem(riley);
-		CheckBox shaughnessy = new CheckBox("Shaughnessy");
-		neighbourhoods.addItem(shaughnessy);
-		CheckBox sc = new CheckBox("South Cambie");
-		neighbourhoods.addItem(sc);
-		CheckBox strathcona = new CheckBox("Strathcona");
-		neighbourhoods.addItem(strathcona);
-		CheckBox sunset = new CheckBox("Sunset");
-		neighbourhoods.addItem(sunset);
-		CheckBox victoria = new CheckBox("Victoria-Fraserview");
-		neighbourhoods.addItem(victoria);
-		CheckBox we = new CheckBox("West End");
-		neighbourhoods.addItem(we);
-		CheckBox wpg = new CheckBox("West Point Grey");
-		neighbourhoods.addItem(wpg);
+		ArrayList<String> neighbourhoodNames = getNeighbourhoodNames();
 		
+		for (String nbh : neighbourhoodNames) {
+			CheckBox check = new CheckBox(nbh);
+			neighbourhoods.addItem(check);
+		}
 		
 		neighbourhoodTree.addItem(neighbourhoods);
 		vPanel.add(neighbourhoodTree);
@@ -360,8 +327,10 @@ public class ParkFinder implements EntryPoint {
 		Button searchNeighbourhoodBtn = new Button("Search", new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (vPanel.getWidgetCount() > 2)
+				if (vPanel.getWidgetCount() > 2) {
 					vPanel.remove(2);
+					map.clearOverlays();
+				}
 				
 				TreeItem neighbourhoodList = neighbourhoodTree.getItem(0);
 				int numNeighbourhoods = neighbourhoodList.getChildCount();
@@ -375,6 +344,7 @@ public class ParkFinder implements EntryPoint {
 				NeighbourhoodFilter nbhFilter = new NeighbourhoodFilter(chosenNBH);
 				if (parkList != null) {
 				List<Park> filteredList = nbhFilter.filter(parkList);
+				newMapMarker(filteredList);
 				CellList<String> filtered = parkCellList(filteredList);
 				vPanel.add(filtered);
 				}
@@ -384,10 +354,39 @@ public class ParkFinder implements EntryPoint {
 		});
 		
 		vPanel.add(searchNeighbourhoodBtn);
-		
+		nbhFilterTab.add(vPanel);
+		tabPanel.add(nbhFilterTab, "Neighbourhood Filter");
 		
 	}
 
+
+	private ArrayList<String> getNeighbourhoodNames() {
+		ArrayList<String> neighbourhoods = new ArrayList<String>();
+		neighbourhoods.add("Downtown");
+		neighbourhoods.add("Arbutus Ridge");
+		neighbourhoods.add("Dunbar-Southlands");
+		neighbourhoods.add("Fairview");
+		neighbourhoods.add("Grandview-Woodland");
+		neighbourhoods.add("Hastings-Sunrise");
+		neighbourhoods.add("Kensington-Cedar Cottage");
+		neighbourhoods.add("Kerrisdale");
+		neighbourhoods.add("Killarney");
+		neighbourhoods.add("Kitsilano");
+		neighbourhoods.add("Marpole");
+		neighbourhoods.add("Mount Pleasant");
+		neighbourhoods.add("Oakridge");
+		neighbourhoods.add("Renfrew-Collingwood");
+		neighbourhoods.add("Riley-Little Mountain");
+		neighbourhoods.add("Shaughnessy");
+		neighbourhoods.add("South Cambie");
+		neighbourhoods.add("Strathcona");
+		neighbourhoods.add("Sunset");
+		neighbourhoods.add("Victoria-Fraserview");
+		neighbourhoods.add("West End");
+		neighbourhoods.add("West Point Grey");
+		
+		return neighbourhoods;
+	}
 
 	private void loadSearchTabContent() {
 		Label searchLabel = new Label("Search by Name or Address");
@@ -429,7 +428,7 @@ public class ParkFinder implements EntryPoint {
 			}
 		});
 	}
-
+	
 	private void searchByName(String symbol) {
 		List<Park> nameMatched = new ArrayList<Park>();
 		for (Park park : parkList) {
@@ -441,12 +440,14 @@ public class ParkFinder implements EntryPoint {
 		if (searchTabPanel.getWidgetCount() > 2) {
 			// Clears previous search results
 			searchTabPanel.remove(2);
+			map.clearOverlays();
 		}
 		
 		if (nameMatched.isEmpty()) {
 			Label noMatchingPark = new Label("There are no park with that name.");
 			searchTabPanel.add(noMatchingPark);
 		} else {
+			newMapMarker(nameMatched);
 			searchTabPanel.add(parkCellList(nameMatched));
 		}
 	}
@@ -465,6 +466,7 @@ public class ParkFinder implements EntryPoint {
 		if (searchTabPanel.getWidgetCount() > 2) {
 			// Clears previous search results
 			searchTabPanel.remove(2);
+			map.clearOverlays();
 		}
 		
 		if (addressMatched.isEmpty()) {
@@ -492,6 +494,7 @@ public class ParkFinder implements EntryPoint {
 		if (favouritesTabPanel.getWidgetCount() > 0) {
 			// Clears previous search results
 			favouritesTabPanel.remove(0);
+			map.clearOverlays();
 		}
 		
 		if (favoriteParkList.size() == 0) {
@@ -624,6 +627,7 @@ public class ParkFinder implements EntryPoint {
 				
 				if (favButtonPanel.getWidgetCount() > 2) {
 					favButtonPanel.remove(2);
+					map.clearOverlays();
 				}
 				
 				favoriteParkService.removePark(parkID, new AsyncCallback<Void>() {
@@ -709,7 +713,7 @@ public class ParkFinder implements EntryPoint {
 						if (value.equals(park.getName())) {
 							message.setText(park.getName());
 							buildParkPage(park, msgPanel);
-							newMapMarker(park);
+							showParkMarkerPopup(park);
 						}
 					}
 					
@@ -720,7 +724,8 @@ public class ParkFinder implements EntryPoint {
 			}
 		};
 		CellList<String> cellList = new CellList<String>(buttonCell);
-		cellList.setRowCount(parks.size(), true);
+		cellList.setVisibleRange(new Range(0, parks.size()));
+		
 		List<String> parkNames = new ArrayList<String>();
 		
 		for (Park park : parks) {
@@ -728,6 +733,7 @@ public class ParkFinder implements EntryPoint {
 		}
 		
 		cellList.setRowData(0, parkNames);
+		
 		return cellList;
 	}
 	
@@ -752,36 +758,44 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void newMapMarker(final Park park) {
-		String latLonString = park.getGoogleMapDest();
-		List<String> latLon = Arrays.asList(latLonString.split(","));
-
-		final LatLng markerLocation = LatLng.newInstance(Double.parseDouble(latLon.get(0)), Double.parseDouble(latLon.get(1)));
+		final LatLng markerLocation = LatLng.newInstance(park.getLat(), park.getLon());
 		Marker marker = new Marker(markerLocation);
 		marker.addMarkerClickHandler(new MarkerClickHandler() {
 			@Override
 			public void onClick(MarkerClickEvent event) {
-
-				if (userLat != 0 && userLng != 0) {
-					VerticalPanel temp = new VerticalPanel();
-					
-					LatLng parkLoc = LatLng.newInstance(park.getLat(), park.getLon());
-					LatLng userLoc = LatLng.newInstance(userLat, userLng);
-					double distance = parkLoc.distanceFrom(userLoc);
-					// Conversion to kilometers
-					distance = distance / 1000;
-					Label nameLabel = new Label(park.getName());
-					Label distLabel = new Label("Approximately " + Integer.toString((int)distance) + "km away from you.");
-					
-					temp.add(nameLabel);
-					temp.add(distLabel);
-					
-					map.getInfoWindow().open(markerLocation, new InfoWindowContent(temp));
-				} else {
-					map.getInfoWindow().open(markerLocation, new InfoWindowContent(park.getName()));
-				}
+				showParkMarkerPopup(park);
 			}
 		});
 		map.addOverlay(marker);
+	}
+	
+	private void newMapMarker(List<Park> parks) {
+		for (Park park : parks) {
+			newMapMarker(park);
+		}
+	}
+	
+	private void showParkMarkerPopup(Park park) {
+		LatLng markerLocation = LatLng.newInstance(park.getLat(), park.getLon());
+		
+		if (userLat != 0 && userLng != 0) {
+			VerticalPanel parkNameDist = new VerticalPanel();
+			
+			LatLng parkLoc = LatLng.newInstance(park.getLat(), park.getLon());
+			LatLng userLoc = LatLng.newInstance(userLat, userLng);
+			double distance = parkLoc.distanceFrom(userLoc);
+			// Conversion to kilometers
+			distance = distance / 1000;
+			Label nameLabel = new Label(park.getName());
+			Label distLabel = new Label("Approximately " + Integer.toString((int)distance) + "km away from you.");
+			
+			parkNameDist.add(nameLabel);
+			parkNameDist.add(distLabel);
+			
+			map.getInfoWindow().open(markerLocation, new InfoWindowContent(parkNameDist));
+		} else {
+			map.getInfoWindow().open(markerLocation, new InfoWindowContent(park.getName()));
+		}
 	}
 	
 	private void handleError(Throwable error) {
