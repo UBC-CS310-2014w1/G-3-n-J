@@ -14,6 +14,7 @@ import com.google.gwt.parkfinder.server.Park;
 import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
@@ -29,6 +30,8 @@ public class FilterPanel extends VerticalPanel {
 	private VerticalPanel neighbourhoodPanel = new VerticalPanel();
 	private Tree neighbourhoodTree = new Tree();
 
+	private VerticalPanel parkDisplay = new VerticalPanel();
+	private Grid parkGrid;
 
 	public FilterPanel(ParkFinder pf) {
 		parkFinder = pf;
@@ -145,11 +148,13 @@ public class FilterPanel extends VerticalPanel {
 				}
 
 				NeighbourhoodFilter nbhFilter = new NeighbourhoodFilter(chosenNBH);
-//				if (parkList != null) {
-//					List<Park> filteredList = nbhFilter.filter(parkList);
-//					CellList<String> filtered = parkCellList(filteredList);
-//					neighbourhoodPanel.add(filtered);
-//				}
+				//				if (parkList != null) {
+				//					List<Park> filteredList = nbhFilter.filter(parkList);
+				//					CellList<String> filtered = parkCellList(filteredList);
+				//					neighbourhoodPanel.add(filtered);
+				//				}
+
+				display();
 
 			}
 
@@ -157,47 +162,62 @@ public class FilterPanel extends VerticalPanel {
 
 		neighbourhoodPanel.add(searchNeighbourhoodBtn);
 		this.add(neighbourhoodPanel);
+
+		this.add(parkDisplay);
 	}
 
-////  TODO DISTANCE FILTER
-//		HorizontalPanel distancePanel = new HorizontalPanel();
-//		TextBox distanceTextField = new TextBox();
-//		Button distanceButton = new Button("Distance", new ClickHandler() {
-//			public void onClick(ClickEvent event) {
-//				//map.getlatlong
-//				// new DistanceFilter based on distance input and map coords
-//			}
-//		});
-//		distancePanel.add(distanceTextField);
-//		distancePanel.add(distanceButton);
-//		filterPanel.add(distancePanel);
-//		
-//		// TODO NEIGHBOURHOOD FILTER
-//		Button neighbourhoodButton = new Button("Neighbourhood", new ClickHandler() {
-//			public void onClick(ClickEvent event) {
-//			//	filterPanel.remove(neighbourhoodButton);
-//			//	filterPanel.add(neighbourhoodPanel);	
-//
-//				
-//			}
-//		});
-//		VerticalPanel neighbourhoodPanel = new VerticalPanel();
-//		// checkboxes go in neighbourhoodPanel
-//		
-//		filterPanel.add(neighbourhoodButton);
-//	}
-//
-//	private void refreshParks() {
-//		List<Park> displayParks = new ArrayList<Park>();
-//		// somehow use parkService.getParkList() to initialize displayParks
-//		for (ParkFilter filter: filters) {
-//			filter.filter(displayParks);
-//		}
-//	}
-//
+	////  TODO DISTANCE FILTER
+	//		HorizontalPanel distancePanel = new HorizontalPanel();
+	//		TextBox distanceTextField = new TextBox();
+	//		Button distanceButton = new Button("Distance", new ClickHandler() {
+	//			public void onClick(ClickEvent event) {
+	//				//map.getlatlong
+	//				// new DistanceFilter based on distance input and map coords
+	//			}
+	//		});
+	//		distancePanel.add(distanceTextField);
+	//		distancePanel.add(distanceButton);
+	//		filterPanel.add(distancePanel);
+	//		
+	//		// TODO NEIGHBOURHOOD FILTER
+	//		Button neighbourhoodButton = new Button("Neighbourhood", new ClickHandler() {
+	//			public void onClick(ClickEvent event) {
+	//			//	filterPanel.remove(neighbourhoodButton);
+	//			//	filterPanel.add(neighbourhoodPanel);	
+	//
+	//				
+	//			}
+	//		});
+	//		VerticalPanel neighbourhoodPanel = new VerticalPanel();
+	//		// checkboxes go in neighbourhoodPanel
+	//		
+	//		filterPanel.add(neighbourhoodButton);
+	//	}
+	//
+	//	private void refreshParks() {
+	//		List<Park> displayParks = new ArrayList<Park>();
+	//		// somehow use parkService.getParkList() to initialize displayParks
+	//		for (ParkFilter filter: filters) {
+	//			filter.filter(displayParks);
+	//		}
+	//	}
+	//
 
-public List<ParkFilter> getFilters() {
-	return filters;
-}
+	private void display() {
+		parkDisplay.clear();
+		parkGrid = parkFinder.displayParkList();
+		parkDisplay.add(parkGrid);
+	}
+
+	public List<Park> filter(List<Park> parks) {
+		for (ParkFilter filter : filters) {
+			filter.filter(parks);
+		}
+		return parks;	
+	}
+
+	public List<ParkFilter> getFilters() {
+		return filters;
+	}
 
 }

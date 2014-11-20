@@ -75,16 +75,14 @@ public class ParkFinder implements EntryPoint {
 	private TabPanel tabPanel = new TabPanel();
 	private VerticalPanel searchTabPanel = new VerticalPanel();
 	private VerticalPanel favouritesTabPanel = new VerticalPanel();
-	
+
 	private VerticalPanel loginPanel = new VerticalPanel();
 	private LoginInfo loginInfo = null;
 	private Label loginLabel = new Label("Please sign in to your Google Account to access the ParkFinder application.");
 	private Anchor signInLink = new Anchor("Sign In");
 	private Anchor signOutLink = new Anchor("Sign Out");
-	
-	// TODO filter only makes two changes to ParkFinder. this is one of them
+
 	private FilterPanel filterPanel = new FilterPanel(this); 
-	
 
 	private List<Park> parkList = new ArrayList<Park>();
 	private List<String> favoriteParkList = new ArrayList<String>();
@@ -100,24 +98,24 @@ public class ParkFinder implements EntryPoint {
 		LoginServiceAsync loginService = GWT.create(LoginService.class);
 		loginService.login(GWT.getHostPageBaseURL(),
 				new AsyncCallback<LoginInfo>() {
-					public void onFailure(Throwable error) {
-						handleError(error);
-					}
+			public void onFailure(Throwable error) {
+				handleError(error);
+			}
 
-					public void onSuccess(LoginInfo result) {
-						loginInfo = result;
-						if (loginInfo.isLoggedIn()) {
-							loadParkFinder();
-						} else {
-							loadLogin();
-						}
-					}
-				});
+			public void onSuccess(LoginInfo result) {
+				loginInfo = result;
+				if (loginInfo.isLoggedIn()) {
+					loadParkFinder();
+				} else {
+					loadLogin();
+				}
+			}
+		});
 	}
 
 	private void loadParkFinder() {
 		signOutLink.setHref(loginInfo.getLogoutUrl());
-		
+
 		retrieveParkInformation();
 		getUserLocation();
 
@@ -126,7 +124,7 @@ public class ParkFinder implements EntryPoint {
 				buildMapUi();
 			}
 		});
-		
+
 		initAdminBar();
 		initTabPanels();
 		initTabs();
@@ -146,7 +144,7 @@ public class ParkFinder implements EntryPoint {
 	private void buildMapUi() {
 		LatLng defaultCenter = LatLng.newInstance(49.240978,-123.112028);
 		map = new MapWidget(defaultCenter, 12);
-		
+
 		map.setSize("100%", "100%");
 		map.addControl(new LargeMapControl());
 
@@ -162,16 +160,16 @@ public class ParkFinder implements EntryPoint {
 				(loginInfo.getNickname().equals("acie.liang"))||
 				(loginInfo.getNickname().equals("shineoutloudlol"))||
 				(loginInfo.getNickname().equals("joshparkes24"))) {
-				
+
 
 			Button adminButton = new Button("ADMIN", new ClickHandler() {
-				
+
 				@Override
 				public void onClick(ClickEvent event) {
 					DialogBox adminBox = new DialogBox();
 					adminBox.setText("Administrator Panel");
 					final VerticalPanel adminPanel = new VerticalPanel();
-					
+
 					Button parseButton = new Button("Parse Data", new ClickHandler() {
 
 						@Override
@@ -193,7 +191,7 @@ public class ParkFinder implements EntryPoint {
 						}
 					});
 
-					
+
 					Button displayButton = new Button("Show Database", new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
@@ -220,10 +218,11 @@ public class ParkFinder implements EntryPoint {
 
 		RootPanel.get("signInOut").add(signOutLink);
 	}
-	
+
 	private void initTabs() {
 		tabPanel.setWidth("100%");
 		tabPanel.add(searchTabPanel, "Search");
+		tabPanel.add(filterPanel, "Filter");
 		tabPanel.add(favouritesTabPanel, "Favourites");
 		tabPanel.selectTab(0);
 
@@ -234,7 +233,7 @@ public class ParkFinder implements EntryPoint {
 		loadFavoritesTabContent();
 	}
 
-	
+
 
 	private void loadSearchTabContent() {
 		Label searchLabel = new Label("Search by Name or Address");
@@ -245,8 +244,6 @@ public class ParkFinder implements EntryPoint {
 		searchPanel.add(field);
 		searchPanel.add(search);
 		searchTabPanel.add(searchPanel);
-		// TODO: filter only makes two changes to ParkFinder. this is the other one
-		searchTabPanel.add(filterPanel);
 
 		field.setFocus(true);
 
@@ -288,12 +285,12 @@ public class ParkFinder implements EntryPoint {
 				nameMatched.add(park);
 			}
 		}
-		
+
 		if (searchTabPanel.getWidgetCount() > 2) {
 			// Clears previous search results
 			searchTabPanel.remove(2);
 		}
-		
+
 		if (nameMatched.isEmpty()) {
 			Label noMatchingPark = new Label("There are no park with that name.");
 			searchTabPanel.add(noMatchingPark);
@@ -313,12 +310,12 @@ public class ParkFinder implements EntryPoint {
 				addressMatched.add(park);
 			}
 		}
-		
+
 		if (searchTabPanel.getWidgetCount() > 2) {
 			// Clears previous search results
 			searchTabPanel.remove(2);
 		}
-		
+
 		if (addressMatched.isEmpty()) {
 			Label noMatchingPark = new Label("There are no park with that address.");
 			searchTabPanel.add(noMatchingPark);
@@ -374,13 +371,13 @@ public class ParkFinder implements EntryPoint {
 		allInfo.add(neighbourhood);
 
 		// Display facilities.
-		
+
 		String parkFacilities = park.getFacility();
 		if (!parkFacilities.equalsIgnoreCase("No available facilities.")) {
 			Tree facilityTree = new Tree();
 			final TreeItem facilitiesRoot = new TreeItem();
 			facilitiesRoot.setText("Available Facilities");
-			
+
 			List<String> listOfFacilities = Arrays.asList(parkFacilities.split(","));
 			for (String facility : listOfFacilities) {
 				Label facilityLabel = new Label(facility);
@@ -388,7 +385,7 @@ public class ParkFinder implements EntryPoint {
 			}
 			facilityTree.addItem(facilitiesRoot);
 			allInfo.add(facilityTree);
-			
+
 			facilityTree.addMouseDownHandler(new MouseDownHandler() {
 				@Override
 				public void onMouseDown(MouseDownEvent event) {
@@ -396,17 +393,17 @@ public class ParkFinder implements EntryPoint {
 						facilitiesRoot.setState(false);
 					else facilitiesRoot.setState(true);
 				}
-				
+
 			});
 		}
-		
+
 		// Displays washrooms
 		String parkWashrooms = park.getWashroom();
 		if (!parkWashrooms.equalsIgnoreCase("No available washrooms.")) {
 			Tree washroomTree = new Tree();
 			final TreeItem washroomsRoot = new TreeItem();
 			washroomsRoot.setText("Washrooms available at:");
-			
+
 			List<String> listOfWashrooms = Arrays.asList(parkWashrooms.split("LOCATION:"));
 			for (String washroom : listOfWashrooms) {
 				if (washroom.length() > 0) {
@@ -417,7 +414,7 @@ public class ParkFinder implements EntryPoint {
 			}
 			washroomTree.addItem(washroomsRoot);
 			allInfo.add(washroomTree);
-			
+
 			washroomTree.addMouseDownHandler(new MouseDownHandler() {
 				@Override
 				public void onMouseDown(MouseDownEvent event) {
@@ -425,58 +422,58 @@ public class ParkFinder implements EntryPoint {
 						washroomsRoot.setState(false);
 					else washroomsRoot.setState(true);
 				}
-				
+
 			});
 		}
 
 		// Favourites button
 		Button favoriteButton = new Button("Add to Favorites", new ClickHandler() {
 
+			@Override
+			public void onClick(ClickEvent event) {
+				String parkID = park.getParkID();
+				favoriteParkService.addPark(parkID, new AsyncCallback<Void>() {
+
 					@Override
-					public void onClick(ClickEvent event) {
-						String parkID = park.getParkID();
-						favoriteParkService.addPark(parkID, new AsyncCallback<Void>() {
+					public void onFailure(Throwable caught) {
+						Label addFavoritesFailed = new Label("Error: Failed to Add " + park.getName() + " to Favorites");
+						favButtonPanel.add(addFavoritesFailed);
+					}
 
-									@Override
-									public void onFailure(Throwable caught) {
-										Label addFavoritesFailed = new Label("Error: Failed to Add " + park.getName() + " to Favorites");
-										favButtonPanel.add(addFavoritesFailed);
-									}
+					@Override
+					public void onSuccess(Void result) {
+						Label addFavoritesSuccess = new Label(park.getName() + " is saved to Favorites.");
+						loadFavoritesTabContent();
+						favButtonPanel.add(addFavoritesSuccess);
 
-									@Override
-									public void onSuccess(Void result) {
-										Label addFavoritesSuccess = new Label(park.getName() + " is saved to Favorites.");
-										loadFavoritesTabContent();
-										favButtonPanel.add(addFavoritesSuccess);
-
-									}
-								});
 					}
 				});
+			}
+		});
 
 		Button removeButton = new Button("Remove from Favorites", new ClickHandler() {
 
+			@Override
+			public void onClick(ClickEvent event) {
+				String parkID = park.getParkID();
+				favoriteParkService.removePark(parkID, new AsyncCallback<Void>() {
+
 					@Override
-					public void onClick(ClickEvent event) {
-						String parkID = park.getParkID();
-						favoriteParkService.removePark(parkID, new AsyncCallback<Void>() {
+					public void onFailure(Throwable caught) {
+						Label removeFavoritesFailed = new Label("Error: Failed to Remove " + park.getName() + " to Favorites");
+						panel.add(removeFavoritesFailed);
+					}
 
-									@Override
-									public void onFailure(Throwable caught) {
-										Label removeFavoritesFailed = new Label("Error: Failed to Remove " + park.getName() + " to Favorites");
-										panel.add(removeFavoritesFailed);
-									}
-
-									@Override
-									public void onSuccess(Void result) {
-										Label removeFavoritesSuccess = new Label(park.getName() + " is removed from Favorites.");
-										loadFavoritesTabContent();
-										panel.add(removeFavoritesSuccess);
-									}
-								});
+					@Override
+					public void onSuccess(Void result) {
+						Label removeFavoritesSuccess = new Label(park.getName() + " is removed from Favorites.");
+						loadFavoritesTabContent();
+						panel.add(removeFavoritesSuccess);
 					}
 				});
-		
+			}
+		});
+
 		int i = 0;
 		boolean enableAdd = true;
 		while (enableAdd && i < favoriteParkList.size()) {
@@ -492,29 +489,42 @@ public class ParkFinder implements EntryPoint {
 			favoriteButton.setEnabled(false);
 			removeButton.setEnabled(true);
 		}
-	
+
 
 		favButtonPanel.add(favoriteButton);
 		favButtonPanel.add(removeButton);
 		allInfo.add(favButtonPanel);
-		
+
 		panel.add(allInfo);
 	}
 
-	private Grid parkGrid(List<Park> parks, int length) {
+	private Grid parkGrid(List<Park> parks, int len) {
+		int length = len;
 		if (length == 0) return null;
+		if (length == -1) { length = parks.size(); }
 		Grid dataGrid = new Grid(length + 1, 2);
 		dataGrid.setText(0, 0, "Name");
 		dataGrid.setText(0, 1, "Address");
-		
+
 		for (int i = 0; i < length; i++) {
 			String parkName = parks.get(i).getName();
 			String parkAddress = parks.get(i).getStreetNumber() + " " + parks.get(i).getStreetName();
 			dataGrid.setText(i + 1, 0, parkName);
 			dataGrid.setText(i + 1, 1, parkAddress);
 		}
-		
+
 		return dataGrid;
+	}
+	
+	public Grid displayParkList() {
+		List<Park> displayParkList;
+		if (parkList.isEmpty()) {
+			displayParkList = new ArrayList<Park>();
+		} else {
+			displayParkList = parkList;
+		}
+		filterPanel.filter(displayParkList);
+		return parkGrid(displayParkList, -1);
 	}
 
 	private CellList<String> parkCellList(final List<Park> parks) {
@@ -524,19 +534,19 @@ public class ParkFinder implements EntryPoint {
 			public void onBrowserEvent(Context context, Element parent, final String value, NativeEvent event, ValueUpdater<String> valueUpdater) {
 				super.onBrowserEvent(context, parent, value, event, valueUpdater);
 
-// 				Commented out, because exception was being thrown at this line.
-//				if (MOUSEOVER.equals(event.getType())) {
-//					// TODO: change color when mouseover
-//				}
+				// 				Commented out, because exception was being thrown at this line.
+				//				if (MOUSEOVER.equals(event.getType())) {
+				//					// TODO: change color when mouseover
+				//				}
 
 
 				if (CLICK.equals(event.getType())) {
 					final DialogBox message = new DialogBox();
 					final ScrollPanel msgPanel = new ScrollPanel();
 					msgPanel.setSize("350px", "375px");
-					
+
 					message.add(msgPanel);
-					
+
 					for (Park park : parks) {
 						if (value.equals(park.getName())) {
 							message.setText(park.getName());
@@ -544,7 +554,7 @@ public class ParkFinder implements EntryPoint {
 							newMapMarker(park);
 						}
 					}
-					
+
 					message.setAutoHideEnabled(true);
 					message.setPopupPosition(300, 150);
 					message.show();
@@ -554,11 +564,11 @@ public class ParkFinder implements EntryPoint {
 		CellList<String> cellList = new CellList<String>(buttonCell);
 		cellList.setRowCount(parks.size(), true);
 		List<String> parkNames = new ArrayList<String>();
-		
+
 		for (Park park : parks) {
 			parkNames.add(park.getName());
 		}
-		
+
 		cellList.setRowData(0, parkNames);
 		return cellList;
 	}
@@ -567,7 +577,7 @@ public class ParkFinder implements EntryPoint {
 		final DialogBox message = new DialogBox();
 		final VerticalPanel msgPanel = new VerticalPanel();
 		message.add(msgPanel);
-		
+
 		parkService.getParkList(new AsyncCallback<List<Park>>() {
 
 			@Override
@@ -586,12 +596,12 @@ public class ParkFinder implements EntryPoint {
 			}
 		});
 	}
-	
+
 	private synchronized void retrieveFavoriteParkInformation() {
 		final DialogBox message = new DialogBox();
 		final VerticalPanel msgPanel = new VerticalPanel();
 		message.add(msgPanel);
-		
+
 		favoriteParkService.getParks(new AsyncCallback<String[]>() {
 
 			@Override
@@ -612,7 +622,7 @@ public class ParkFinder implements EntryPoint {
 			}
 		});
 	}
-	
+
 	private void getUserLocation() {
 		Geolocation userLoc = Geolocation.getIfSupported();
 		userLoc.getCurrentPosition(new Callback<Position, PositionError>() {
@@ -629,7 +639,7 @@ public class ParkFinder implements EntryPoint {
 				userLat = loc.getLatitude();
 				userLng = loc.getLongitude();
 			}
-			
+
 		});
 	}
 
@@ -644,7 +654,7 @@ public class ParkFinder implements EntryPoint {
 			public void onClick(MarkerClickEvent event) {
 				if (userLat != 0 && userLng != 0) {
 					VerticalPanel temp = new VerticalPanel();
-					
+
 					LatLng parkLoc = LatLng.newInstance(park.getLat(), park.getLon());
 					LatLng userLoc = LatLng.newInstance(userLat, userLng);
 					double distance = parkLoc.distanceFrom(userLoc);
@@ -652,10 +662,10 @@ public class ParkFinder implements EntryPoint {
 					distance = distance / 1000;
 					Label nameLabel = new Label(park.getName());
 					Label distLabel = new Label("Approximately " + Integer.toString((int)distance) + "km away from you.");
-					
+
 					temp.add(nameLabel);
 					temp.add(distLabel);
-					
+
 					map.getInfoWindow().open(markerLocation, new InfoWindowContent(temp));
 				} else {
 					map.getInfoWindow().open(markerLocation, new InfoWindowContent(park.getName()));
@@ -664,7 +674,7 @@ public class ParkFinder implements EntryPoint {
 		});
 		map.addOverlay(marker);
 	}
-	
+
 	private void handleError(Throwable error) {
 		Window.alert(error.getMessage());
 		if (error instanceof NotLoggedInException) {
