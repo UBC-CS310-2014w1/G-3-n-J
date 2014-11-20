@@ -16,6 +16,8 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -24,65 +26,100 @@ public class FilterPanel extends VerticalPanel {
 
 	private List<ParkFilter> filters = new ArrayList<ParkFilter>();
 	private ParkFinder parkFinder;
-	private CheckBox washroomCheckBox = new CheckBox("Washrooms");
-	private CheckBox playgroundCheckBox = new CheckBox("Playgrounds");
+	//private CheckBox washroomCheckBox = new CheckBox("Washrooms");
+	//private CheckBox playgroundCheckBox = new CheckBox("Playgrounds");
 
 	private VerticalPanel neighbourhoodPanel = new VerticalPanel();
 	private Tree neighbourhoodTree = new Tree();
 
 	private VerticalPanel parkDisplay = new VerticalPanel();
 	private Grid parkGrid;
+	
+	private class FilterCheckBox extends CheckBox{
+
+		public FilterCheckBox (String text, FilterPanel panel, final ParkFilter filter) {
+			super(text);
+			this.setValue(false);
+			final CheckBox fcb = this;
+			this.addClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					if (fcb.getValue()) {
+						fcb.setValue(true);
+						filters.add(filter);
+						refresh();
+					} else {
+						fcb.setValue(false);
+						for (ParkFilter f: filters){
+							if (f.getClass() == filter.getClass()){
+								filters.remove(f);
+								refresh();
+								break;
+							}
+						}
+					}
+				}
+			});
+		}
+	}
 
 	public FilterPanel(ParkFinder pf) {
 		parkFinder = pf;
-
-		washroomCheckBox.setValue(false);
-		washroomCheckBox.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				if (washroomCheckBox.getValue()) {
-					//					washroomCheckBox.setValue(false);
-					for (ParkFilter f: filters){
-						if (f.getClass() == WashroomFilter.class){
-							filters.remove(f);
-						}
-					}
-				} else {
-					//					washroomCheckBox.setValue(true);
-					filters.add(new WashroomFilter());
-				}
-				//				pf.refreshParks();
-			}
-		});
+		
+		ParkFilter washroomFilter = new WashroomFilter();
+		FilterCheckBox washroomCheckBox = new FilterCheckBox("Washrooms", this, washroomFilter);
+//
+//		washroomCheckBox.setValue(false);
+//		washroomCheckBox.addClickHandler(new ClickHandler() {
+//			public void onClick(ClickEvent event) {
+//				if (washroomCheckBox.getValue()) {
+//					washroomCheckBox.setValue(true);
+//					filters.add(new WashroomFilter());
+//					refresh();
+//				} else {
+//					washroomCheckBox.setValue(false);
+//					for (ParkFilter f: filters){
+//						if (f.getClass() == WashroomFilter.class){
+//							filters.remove(f);
+//							refresh();
+//							break;
+//						}
+//					}
+//				}
+//			}
+//		});
 		this.add(washroomCheckBox);
-
-		playgroundCheckBox.setValue(false);
-		playgroundCheckBox.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				if (playgroundCheckBox.getValue()) {
-					//					washroomCheckBox.setValue(false);
-					for (ParkFilter f: filters){
-						if (f.getClass() == PlaygroundFilter.class){
-							filters.remove(f);
-						}
-					}
-				} else {
-					//					washroomCheckBox.setValue(true);
-					filters.add(new PlaygroundFilter());
-				}
-				//				pf.refreshParks();
-			}
-		});
+		
+		ParkFilter playgroundFilter = new PlaygroundFilter();
+		FilterCheckBox playgroundCheckBox = new FilterCheckBox("Playgrounds", this, playgroundFilter);
+//
+//		playgroundCheckBox.setValue(false);
+//		playgroundCheckBox.addClickHandler(new ClickHandler() {
+//			public void onClick(ClickEvent event) {
+//				if (playgroundCheckBox.getValue()) {
+//					playgroundCheckBox.setValue(true);
+//					filters.add(new PlaygroundFilter());
+//					refresh();
+//				} else {
+//					playgroundCheckBox.setValue(false);
+//					for (ParkFilter f: filters){
+//						if (f.getClass() == PlaygroundFilter.class){
+//							filters.remove(f);
+//							refresh();
+//							break;
+//						}
+//					}
+//				}
+//			}
+//		});
 		this.add(playgroundCheckBox);
-
-
-
 
 
 
 		TreeItem neighbourhoods = new TreeItem();
 		neighbourhoods.setText("Neighbourhoods:");
-
-		// Check box for all 
+		CheckBox allNeighbourhoods = new CheckBox("All");
+		neighbourhoods.addItem(allNeighbourhoods);
+		//ParkFilter downtownNeighbourhoodFilter = new NeighbourhoodFilter("Downtown");
 		CheckBox downtown = new CheckBox("Downtown");
 		neighbourhoods.addItem(downtown);
 		CheckBox arbutusRidge = new CheckBox("Arbutus Ridge");
@@ -131,39 +168,10 @@ public class FilterPanel extends VerticalPanel {
 
 		neighbourhoodTree.addItem(neighbourhoods);
 		neighbourhoodPanel.add(neighbourhoodTree);
-
-		Button searchNeighbourhoodBtn = new Button("Search", new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				if (neighbourhoodPanel.getWidgetCount() > 2)
-					neighbourhoodPanel.remove(2);
-
-				TreeItem neighbourhoodList = neighbourhoodTree.getItem(0);
-				int numNeighbourhoods = neighbourhoodList.getChildCount();
-				List<String> chosenNBH = new LinkedList<String>();
-				for (int i = 0; i < numNeighbourhoods; i++) {
-					CheckBox box = (CheckBox) neighbourhoodList.getChild(i).getWidget();
-					if (box.getValue())
-						chosenNBH.add(neighbourhoodList.getChild(i).getText());
-				}
-
-				NeighbourhoodFilter nbhFilter = new NeighbourhoodFilter(chosenNBH);
-				//				if (parkList != null) {
-				//					List<Park> filteredList = nbhFilter.filter(parkList);
-				//					CellList<String> filtered = parkCellList(filteredList);
-				//					neighbourhoodPanel.add(filtered);
-				//				}
-
-				display();
-
-			}
-
-		});
-
-		neighbourhoodPanel.add(searchNeighbourhoodBtn);
 		this.add(neighbourhoodPanel);
 
 		this.add(parkDisplay);
+		//refresh();
 	}
 
 	////  TODO DISTANCE FILTER
@@ -179,45 +187,31 @@ public class FilterPanel extends VerticalPanel {
 	//		distancePanel.add(distanceButton);
 	//		filterPanel.add(distancePanel);
 	//		
-	//		// TODO NEIGHBOURHOOD FILTER
-	//		Button neighbourhoodButton = new Button("Neighbourhood", new ClickHandler() {
-	//			public void onClick(ClickEvent event) {
-	//			//	filterPanel.remove(neighbourhoodButton);
-	//			//	filterPanel.add(neighbourhoodPanel);	
-	//
-	//				
-	//			}
-	//		});
-	//		VerticalPanel neighbourhoodPanel = new VerticalPanel();
-	//		// checkboxes go in neighbourhoodPanel
-	//		
-	//		filterPanel.add(neighbourhoodButton);
-	//	}
-	//
-	//	private void refreshParks() {
-	//		List<Park> displayParks = new ArrayList<Park>();
-	//		// somehow use parkService.getParkList() to initialize displayParks
-	//		for (ParkFilter filter: filters) {
-	//			filter.filter(displayParks);
-	//		}
-	//	}
-	//
 
-	private void display() {
+	private void refresh() {
 		parkDisplay.clear();
 		parkGrid = parkFinder.displayParkList();
+//		Label numParks = new Label("You do not have any favorite park.");
+//		TextBox diagno = new TextBox();
+//		String text = Integer.toString(filters.size());
+//		diagno.setText(text);
+//		parkDisplay.add(diagno);
 		parkDisplay.add(parkGrid);
 	}
 
 	public List<Park> filter(List<Park> parks) {
 		for (ParkFilter filter : filters) {
-			filter.filter(parks);
+			parks = filter.filter(parks);
 		}
 		return parks;	
 	}
 
 	public List<ParkFilter> getFilters() {
 		return filters;
+	}
+
+	public void add(ParkFilter filter) {
+		filters.add(filter);
 	}
 
 }

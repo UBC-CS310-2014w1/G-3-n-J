@@ -23,7 +23,6 @@ import com.google.gwt.parkfinder.client.ParkService;
 import com.google.gwt.parkfinder.client.ParkServiceAsync;
 import com.google.gwt.parkfinder.client.FavoriteParkService;
 import com.google.gwt.parkfinder.client.FavoriteParkServiceAsync;
-import com.google.gwt.parkfinder.filter.NeighbourhoodFilter;
 import com.google.gwt.parkfinder.server.Park;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
@@ -518,12 +517,7 @@ public class ParkFinder implements EntryPoint {
 	
 	public Grid displayParkList() {
 		List<Park> displayParkList;
-		if (parkList.isEmpty()) {
-			displayParkList = new ArrayList<Park>();
-		} else {
-			displayParkList = parkList;
-		}
-		filterPanel.filter(displayParkList);
+		displayParkList = filterPanel.filter(parkList);
 		return parkGrid(displayParkList, -1);
 	}
 
