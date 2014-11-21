@@ -35,6 +35,9 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.geolocation.client.Geolocation;
@@ -102,12 +105,13 @@ public class ParkFinder implements EntryPoint {
 	public void onModuleLoad() {
 		// Check login status using login service.
 		LoginServiceAsync loginService = GWT.create(LoginService.class);
-		loginService.login(GWT.getHostPageBaseURL(),
-				new AsyncCallback<LoginInfo>() {
+		loginService.login(GWT.getHostPageBaseURL(), new AsyncCallback<LoginInfo>() {
+					@Override
 					public void onFailure(Throwable error) {
 						handleError(error);
 					}
 
+					@Override
 					public void onSuccess(LoginInfo result) {
 						loginInfo = result;
 						if (loginInfo.isLoggedIn()) {
@@ -120,8 +124,31 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void loadParkFinder() {
-		signOutLink.setHref(loginInfo.getLogoutUrl());
+		initTabs();
+		retrieveParkInformation();
+		retrieveFavoriteParkInformation();
 		
+		signOutLink.setHref(loginInfo.getLogoutUrl());
+		signOutLink.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(final ClickEvent event) {
+				List<String> newFavoriteList = (List<String>) favoriteParkList;
+				favoriteParkService.updateParks(newFavoriteList, new AsyncCallback<Void>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+						messageHandler(1);
+					}
+
+					@Override
+					public void onSuccess(Void result) {
+						// NULL
+					}
+				});
+			}
+		});
+	
 		getUserLocation();
 
 		Maps.loadMapsApi("", "2", false, new Runnable() {
@@ -129,16 +156,6 @@ public class ParkFinder implements EntryPoint {
 				buildMapUi();
 			}
 		});
-
-
-		// Sequence Map (set up this way to avoid synchronization problem)
-		// retrieveParkInformation() -> loadAdminBarContent()
-		//							 -> loadSearchTabContent()
-		// retrieveFavoriteParkInformation() -> loadFavoriteTabContent()
-
-		initTabs();
-		retrieveParkInformation();
-		retrieveFavoriteParkInformation();
 		
 		testNeighbourhoodFilterTab();
 
@@ -178,17 +195,10 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void retrieveParkInformation() {
-		final DialogBox message = new DialogBox();
-		final VerticalPanel msgPanel = new VerticalPanel();
-		message.add(msgPanel);
-		
 		parkService.getParkList(new AsyncCallback<List<Park>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				message.setText("Error: Failed to Retrieve Parks Information.");
-				message.setAutoHideEnabled(true);
-				message.setPopupPosition(300, 150);
-				message.show();
+				messageHandler(2);
 			}
 
 			@Override
@@ -196,7 +206,7 @@ public class ParkFinder implements EntryPoint {
 				parkList.clear();
 				for (Park park : parks)
 					parkList.add(park);
-				
+
 				loadAdminBarContent();
 				loadSearchTabContent();
 			}
@@ -204,25 +214,18 @@ public class ParkFinder implements EntryPoint {
 	}
 	
 	private void retrieveFavoriteParkInformation() {
-		final DialogBox message = new DialogBox();
-		final VerticalPanel msgPanel = new VerticalPanel();
-		message.add(msgPanel);
-		
 		favoriteParkService.getParks(new AsyncCallback<String[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				message.setText("Error: Failed to Retrieve Favorite Parks Information.");
-				message.setAutoHideEnabled(true);
-				message.setPopupPosition(300, 150);
-				message.show();
+				messageHandler(3);
 			}
 
 			@Override
 			public void onSuccess(final String[] favorites) {
 				favoriteParkList.clear();
-				for (String id : favorites) 
+				for (String id : favorites)
 					favoriteParkList.add(id);
-				
+
 				loadFavoritesTabContent();
 			}
 		});
@@ -257,8 +260,7 @@ public class ParkFinder implements EntryPoint {
 
 								@Override
 								public void onFailure(Throwable error) {
-									Label parseFailed = new Label("Error: Failed to Parse Data");
-									adminPanel.add(parseFailed);
+									messageHandler(4);
 								}
 
 								@Override
@@ -345,7 +347,7 @@ public class ParkFinder implements EntryPoint {
 				}
 				
 				NeighbourhoodFilter nbhFilter = new NeighbourhoodFilter(chosenNBH);
-				if (parkList != null) {
+				if (!parkList.isEmpty()) {
 				List<Park> filteredList = nbhFilter.filter(parkList);
 				newMapMarker(filteredList);
 				CellList<String> filtered = parkCellList(filteredList);
@@ -391,6 +393,7 @@ public class ParkFinder implements EntryPoint {
 		return neighbourhoods;
 	}
 
+
 	private void loadSearchTabContent() {
 		Label searchLabel = new Label("Search by Name or Address");
 		HorizontalPanel searchPanel = new HorizontalPanel();
@@ -400,41 +403,51 @@ public class ParkFinder implements EntryPoint {
 		searchPanel.add(field);
 		searchPanel.add(search);
 		searchTabPanel.add(searchPanel);
-		
 
 		field.setFocus(true);
-
+		
 		search.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-
 				final String symbol = field.getText();
 				field.setFocus(true);
 				field.setText("");
+				search(symbol);
+			}
+		});
 
-				int length = symbol.length();
-				int i = 0;
-
-				if (symbol.charAt(0) >= '0' && symbol.charAt(0) <= '9') {
-
-					while (symbol.charAt(i) != ' ' && i + 1 < length) {
-						i++;
-					}
-					if (i + 1 >= length) {
-						Label invalidAddress = new Label("Invalid park address");
-						searchTabPanel.add(invalidAddress);
-					} else {
-						searchByAddress(symbol, i, length);
-					}
-				}
-				else {
-					searchByName(symbol);
+		field.addKeyDownHandler(new KeyDownHandler() {
+			public void onKeyDown(KeyDownEvent event) {
+				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+					final String symbol = field.getText();
+					field.setFocus(true);
+					field.setText("");
+					search(symbol);
 				}
 			}
 		});
 	}
 	
+	private void search(String symbol) {
+		int length = symbol.length();
+		int i = 0;
+		if (symbol.charAt(0) >= '0' && symbol.charAt(0) <= '9') {
+			while (symbol.charAt(i) != ' ' && i + 1 < length) {
+				i++;
+			}
+			if (i + 1 >= length) {
+				messageHandler(5);
+			} else {
+				searchByAddress(symbol, i, length);
+			}
+		}
+		else {
+			searchByName(symbol);
+		}
+	}
+	
 	private void searchByName(String symbol) {
-		List<Park> nameMatched = new ArrayList<Park>();
+		List<Park> nameMatched = new ArrayList<Park>();;
+		
 		for (Park park : parkList) {
 			if (park.getName().toLowerCase().contains(symbol.toLowerCase())) {
 				nameMatched.add(park);
@@ -507,6 +520,7 @@ public class ParkFinder implements EntryPoint {
 			favouritesTabPanel.add(noFavoritePark);
 		} else {
 			final List<Park> favoriteParks = new ArrayList<Park>();
+			if (!favoriteParkList.isEmpty() && !parkList.isEmpty()) {
 			for (String id : favoriteParkList) {
 				for (Park park : parkList) {
 					if (park.getParkID().equals(id)) {
@@ -514,7 +528,10 @@ public class ParkFinder implements EntryPoint {
 					}
 				}
 			}
-			favouritesTabPanel.add(parkCellList(favoriteParks));
+			}
+			if (!favoriteParks.isEmpty()) {
+				favouritesTabPanel.add(parkCellList(favoriteParks));
+			}
 		}
 	}
 
@@ -602,6 +619,13 @@ public class ParkFinder implements EntryPoint {
 					favButtonPanel.remove(2);
 				}
 				
+				favoriteParkList.add(parkID);
+				favouritesTabPanel.clear();
+				loadFavoritesTabContent();
+				Label addFavoritesSuccess = new Label(park.getName() + " is saved to Favorites.");
+				favButtonPanel.add(addFavoritesSuccess);
+				
+				/*
 				favoriteParkService.addPark(parkID, new AsyncCallback<Void>() {
 
 					@Override
@@ -618,6 +642,8 @@ public class ParkFinder implements EntryPoint {
 						favButtonPanel.add(addFavoritesSuccess);
 					}
 				});
+				*/
+				
 				((FocusWidget) event.getSource()).setEnabled(false);
 				removeButton.setEnabled(true);
 			}
@@ -634,6 +660,13 @@ public class ParkFinder implements EntryPoint {
 					map.clearOverlays();
 				}
 				
+				favoriteParkList.remove(parkID);
+				favouritesTabPanel.clear();
+				loadFavoritesTabContent();
+				Label removeFavoritesSuccess = new Label(park.getName() + " is removed from Favorites.");
+				favButtonPanel.add(removeFavoritesSuccess);
+				
+				/*
 				favoriteParkService.removePark(parkID, new AsyncCallback<Void>() {
 
 					@Override
@@ -650,6 +683,8 @@ public class ParkFinder implements EntryPoint {
 						favButtonPanel.add(removeFavoritesSuccess);
 					}
 				});
+				*/
+				
 				((FocusWidget) event.getSource()).setEnabled(false);
 				favoriteButton.setEnabled(true);
 			}
@@ -743,9 +778,40 @@ public class ParkFinder implements EntryPoint {
 			parkNames.add(park.getName());
 		}
 		
+		if (!parkNames.isEmpty()) {
 		cellList.setRowData(0, parkNames);
-		
+
+		}
+
 		return cellList;
+	}
+	
+	private void messageHandler(int code) {
+		final DialogBox message = new DialogBox();
+		
+		switch (code) {
+		case 1:
+			message.setText("Failed to update favorite park list. Check loadParkFinder()");
+			break;
+		case 2:
+			message.setText("Failed to get park list. Check loadParkFinder()");
+			break;
+		case 3:
+			message.setText("Failed to get favorite park list. Check loadParkFinder()");
+			break;
+		case 4:
+			message.setText("Failed to store park list. Check loadAdminBarContent()");
+			break;
+		case 5:
+			message.setText("Invalid Park Name or Address");
+			break;
+		default:
+			message.setText("unknown error");
+		}
+		
+		message.setAutoHideEnabled(true);
+		message.setPopupPosition(300, 150);
+		message.show();
 	}
 	
 	private void getUserLocation() {

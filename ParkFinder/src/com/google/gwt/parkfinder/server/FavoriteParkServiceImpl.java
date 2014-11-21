@@ -2,7 +2,6 @@ package com.google.gwt.parkfinder.server;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jdo.JDOHelper;
@@ -13,7 +12,6 @@ import javax.jdo.Query;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-
 import com.google.gwt.parkfinder.server.FavoritePark;
 import com.google.gwt.parkfinder.client.FavoriteParkService;
 import com.google.gwt.parkfinder.client.NotLoggedInException;
@@ -24,50 +22,45 @@ public class FavoriteParkServiceImpl extends RemoteServiceServlet implements Fav
 	private static final Logger LOG = Logger.getLogger(FavoriteParkServiceImpl.class.getName());
 	private static final PersistenceManagerFactory PMF = JDOHelper.getPersistenceManagerFactory("transactions-optional");
 
+	@Override
 	public String[] getParks() throws NotLoggedInException {
 		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
-		List<String> favorites = new ArrayList<String>();
+		List<String> parks = new ArrayList<String>();
 		try {
 			Query q = pm.newQuery(FavoritePark.class, "User == u");
 			q.declareParameters("com.google.appengine.api.users.User u");
 			List<FavoritePark> favoriteParks = (List<FavoritePark>) q.execute(getUser());
-			for (FavoritePark favoritePark : favoriteParks) {
-				favorites.add(favoritePark.getParkID());
+			if (favoriteParks != null && favoriteParks.get(0) != null) {
+				for (String parkID : favoriteParks.get(0).getParks())
+					parks.add(parkID);
 			}
-			return (String[]) favorites.toArray(new String[0]);
 		} finally {
 			pm.close();
 		}
+		return (String[]) parks.toArray(new String[0]);
 	}
 
-	public void addPark(String id) throws NotLoggedInException {
+	@Override
+	public void updateParks(List<String> parkIDs) throws NotLoggedInException {
 		checkLoggedIn();
 		PersistenceManager pm = getPersistenceManager();
 		try {
-			pm.makePersistent(new FavoritePark(getUser(), id));
-		} finally {
-			pm.close();
-		}
-	}
-
-	public void removePark(String id) throws NotLoggedInException {
-		checkLoggedIn();
-		PersistenceManager pm = getPersistenceManager();
-		try {
-			long deleteCount = 0;
 			Query q = pm.newQuery(FavoritePark.class, "User == u");
 			q.declareParameters("com.google.appengine.api.users.User u");
 			List<FavoritePark> favoriteParks = (List<FavoritePark>) q.execute(getUser());
-			for (FavoritePark favoritePark : favoriteParks) {
-				if (id.equals(favoritePark.getParkID())) {
-					deleteCount++;
-					pm.deletePersistent(favoritePark);
-				}
-			}
-			if (deleteCount != 1) {
-				LOG.log(Level.WARNING, "removePark deleted " + deleteCount + " Parks");
-			}
+			for (FavoritePark favoritePark : favoriteParks)
+				pm.deletePersistent(favoritePark);
+		} finally {
+			pm.close();
+		}
+		updateParksHelper(parkIDs);
+	}
+
+	public void updateParksHelper(List<String> parkIDs) {
+		PersistenceManager pm = getPersistenceManager();
+		try {
+			pm.makePersistent(new FavoritePark(getUser(), parkIDs));
 		} finally {
 			pm.close();
 		}

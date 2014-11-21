@@ -1,6 +1,7 @@
 package com.google.gwt.parkfinder.server;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
@@ -15,38 +16,30 @@ public class FavoritePark implements Serializable {
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-	private Long entryID;
-	@Persistent
-	private String ParkID;
+	private Long id;
 	@Persistent
 	private User User;
-	
-	public FavoritePark(User user, String parkID) {
+	@Persistent
+	private List<String> Parks;
+
+	public FavoritePark(User user, List<String> parks) {
 		this.User = user;
-		this.ParkID = parkID;
-	}
-
-	public Long getEntryID() {
-		return entryID;
-	}
-
-	public String getParkID() {
-		return ParkID;
+		this.Parks = parks;
 	}
 
 	public User getUser() {
 		return User;
 	}
 
-	public void setEntryID(Long entryID) {
-		this.entryID = entryID;
-	}
-
-	public void setParkID(String parkID) {
-		ParkID = parkID;
+	public List<String> getParks() {
+		return Parks;
 	}
 
 	public void setUser(User user) {
 		User = user;
+	}
+
+	public void setParks(List<String> parks) {
+		Parks = parks;
 	}
 }
