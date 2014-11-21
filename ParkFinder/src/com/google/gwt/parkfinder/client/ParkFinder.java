@@ -125,8 +125,8 @@ public class ParkFinder implements EntryPoint {
 
 	private void loadParkFinder() {
 		initTabs();
-		retrieveParkInformation();
 		retrieveFavoriteParkInformation();
+		retrieveParkInformation();
 		
 		signOutLink.setHref(loginInfo.getLogoutUrl());
 		signOutLink.addClickHandler(new ClickHandler() {
@@ -302,6 +302,9 @@ public class ParkFinder implements EntryPoint {
 			});
 			RootPanel.get("signInOut").add(adminButton);
 		}
+		
+		favouritesTabPanel.clear();
+		loadFavoritesTabContent();
 
 		RootPanel.get("signInOut").add(signOutLink);
 	}
@@ -516,11 +519,9 @@ public class ParkFinder implements EntryPoint {
 		
 		if (favoriteParkList.size() == 0) {
 			Label noFavoritePark = new Label("You do not have any favorite park.");
-			
 			favouritesTabPanel.add(noFavoritePark);
 		} else {
 			final List<Park> favoriteParks = new ArrayList<Park>();
-			if (!favoriteParkList.isEmpty() && !parkList.isEmpty()) {
 			for (String id : favoriteParkList) {
 				for (Park park : parkList) {
 					if (park.getParkID().equals(id)) {
@@ -528,10 +529,7 @@ public class ParkFinder implements EntryPoint {
 					}
 				}
 			}
-			}
-			if (!favoriteParks.isEmpty()) {
-				favouritesTabPanel.add(parkCellList(favoriteParks));
-			}
+			favouritesTabPanel.add(parkCellList(favoriteParks));
 		}
 	}
 
