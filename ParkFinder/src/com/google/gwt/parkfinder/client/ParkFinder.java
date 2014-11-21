@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.TreeMap;
 
 import com.google.gwt.maps.client.InfoWindowContent;
 import com.google.gwt.maps.client.MapWidget;
@@ -604,14 +603,12 @@ public class ParkFinder implements EntryPoint {
 		return dataGrid;
 	}
 	
-	public Grid displayParkList() {
-		List<Park> displayParkList;
-		displayParkList = filterPanel.filter(parkList);
-		return parkGrid(displayParkList, -1);
+	public List<Park> getParks() {
+		return parkList;
 	}
 
 
-	private CellList<String> parkCellList(final List<Park> parks) {
+	CellList<String> parkCellList(final List<Park> parks) {
 		final Cell<String> buttonCell = new ClickableTextCell() {
 
 			@Override
@@ -690,10 +687,14 @@ public class ParkFinder implements EntryPoint {
 		map.addOverlay(marker);
 	}
 	
-	private void newMapMarker(List<Park> parks) {
+	public void newMapMarker(List<Park> parks) {
 		for (Park park : parks) {
 			newMapMarker(park);
 		}
+	}
+	
+	public void clearMap() {
+		map.clearOverlays();
 	}
 	
 	private void showParkMarkerPopup(Park park) {
@@ -725,4 +726,5 @@ public class ParkFinder implements EntryPoint {
 			Window.Location.replace(loginInfo.getLogoutUrl());
 		}
 	}
+
 }

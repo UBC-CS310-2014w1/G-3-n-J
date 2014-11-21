@@ -7,18 +7,20 @@ import java.util.List;
 import com.google.gwt.parkfinder.server.Park;
 
 public class NeighbourhoodFilter implements ParkFilter {
-	String neighbourhood;
+	List<String> neighbourhoods;
 
-	public NeighbourhoodFilter(String neighbourhood) {
-		this.neighbourhood = neighbourhood;
+	public NeighbourhoodFilter(List<String> neighbourhoods) {
+		this.neighbourhoods = neighbourhoods;
 	}
 
 	@Override
 	public List<Park> filter(List<Park> input) {
 		List<Park> output = new LinkedList<Park>();
 		for (Park park: input){
-			if (park.getNeighbourhoodName().equals(neighbourhood)) {
-				output.add(park);
+			for (String string: neighbourhoods) {
+				if (park.getNeighbourhoodName().equals(string)) {
+					output.add(park);
+				}
 			}
 		}	
 		return output;
