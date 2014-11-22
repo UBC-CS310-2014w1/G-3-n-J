@@ -40,12 +40,16 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.geolocation.client.Geolocation;
 import com.google.gwt.geolocation.client.Position;
 import com.google.gwt.geolocation.client.Position.Coordinates;
 import com.google.gwt.geolocation.client.PositionError;
 import com.google.gwt.user.cellview.client.CellList;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ClosingEvent;
+import com.google.gwt.user.client.Window.ClosingHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
@@ -129,23 +133,22 @@ public class ParkFinder implements EntryPoint {
 		retrieveParkInformation();
 		
 		signOutLink.setHref(loginInfo.getLogoutUrl());
+		
+		// Update Datastore when signing out
 		signOutLink.addClickHandler(new ClickHandler() {
 
 			@Override
 			public void onClick(final ClickEvent event) {
-				List<String> newFavoriteList = (List<String>) favoriteParkList;
-				favoriteParkService.updateParks(newFavoriteList, new AsyncCallback<Void>() {
-
-					@Override
-					public void onFailure(Throwable caught) {
-						messageHandler(1);
-					}
-
-					@Override
-					public void onSuccess(Void result) {
-						// NULL
-					}
-				});
+				updateDatastore();
+			}
+		});
+		
+		// Update Datastore when the page closes or refreshes
+		HandlerRegistration registration = Window.addWindowClosingHandler(new ClosingHandler() {
+			
+			@Override
+		    public void onWindowClosing(Window.ClosingEvent event) {
+				updateDatastore();
 			}
 		});
 	
@@ -161,6 +164,31 @@ public class ParkFinder implements EntryPoint {
 
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
+		
+		// Update Datastore every 30 seconds
+		Timer t = new Timer() {
+			public void run() {
+				updateDatastore();
+			}
+		};
+		
+		t.schedule((int) (0.5*1000*60));
+	}
+	
+	private void updateDatastore() {
+		List<String> newFavoriteList = (List<String>) favoriteParkList;
+		favoriteParkService.updateParks(newFavoriteList, new AsyncCallback<Void>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+						System.out.println("failed to update datastore");
+					}
+
+					@Override
+					public void onSuccess(Void result) {
+						// NULL
+					}
+				});
 	}
 
 	private void loadLogin() {
