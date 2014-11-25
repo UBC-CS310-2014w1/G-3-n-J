@@ -14,7 +14,6 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.parkfinder.server.FavoritePark;
 import com.google.gwt.parkfinder.client.FavoriteParkService;
-import com.google.gwt.parkfinder.client.NotLoggedInException;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class FavoriteParkServiceImpl extends RemoteServiceServlet implements FavoriteParkService {
@@ -23,15 +22,19 @@ public class FavoriteParkServiceImpl extends RemoteServiceServlet implements Fav
 	private static final PersistenceManagerFactory PMF = JDOHelper.getPersistenceManagerFactory("transactions-optional");
 
 	@Override
-	public String[] getParks() throws NotLoggedInException {
-		checkLoggedIn();
+	public String[] getParks() {
 		PersistenceManager pm = getPersistenceManager();
 		List<String> parks = new ArrayList<String>();
+
 		try {
 			Query q = pm.newQuery(FavoritePark.class, "User == u");
 			q.declareParameters("com.google.appengine.api.users.User u");
 			List<FavoritePark> favoriteParks = (List<FavoritePark>) q.execute(getUser());
-			if (favoriteParks != null && favoriteParks.get(0) != null) {
+
+			if (favoriteParks.size() == 0) {
+				return (String[]) parks.toArray(new String[0]);
+			} 
+			else {
 				for (String parkID : favoriteParks.get(0).getParks())
 					parks.add(parkID);
 			}
@@ -42,15 +45,17 @@ public class FavoriteParkServiceImpl extends RemoteServiceServlet implements Fav
 	}
 
 	@Override
-	public void updateParks(List<String> parkIDs) throws NotLoggedInException {
-		checkLoggedIn();
+	public void updateParks(List<String> parkIDs){
 		PersistenceManager pm = getPersistenceManager();
+		
 		try {
 			Query q = pm.newQuery(FavoritePark.class, "User == u");
 			q.declareParameters("com.google.appengine.api.users.User u");
 			List<FavoritePark> favoriteParks = (List<FavoritePark>) q.execute(getUser());
+			
 			for (FavoritePark favoritePark : favoriteParks)
 				pm.deletePersistent(favoritePark);
+			
 		} finally {
 			pm.close();
 		}
@@ -63,12 +68,6 @@ public class FavoriteParkServiceImpl extends RemoteServiceServlet implements Fav
 			pm.makePersistent(new FavoritePark(getUser(), parkIDs));
 		} finally {
 			pm.close();
-		}
-	}
-
-	private void checkLoggedIn() throws NotLoggedInException {
-		if (getUser() == null) {
-			throw new NotLoggedInException("Not logged in.");
 		}
 	}
 

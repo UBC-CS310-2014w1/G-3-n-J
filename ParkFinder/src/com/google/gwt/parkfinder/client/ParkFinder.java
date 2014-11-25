@@ -167,6 +167,7 @@ public class ParkFinder implements EntryPoint {
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
 
+		/**
 		// Update Datastore every 30 seconds
 		Timer t = new Timer() {
 			public void run() {
@@ -175,6 +176,7 @@ public class ParkFinder implements EntryPoint {
 		};
 
 		t.schedule((int) (0.5*1000*60));
+		*/
 	}
 
 	private void updateDatastore() {
@@ -183,7 +185,7 @@ public class ParkFinder implements EntryPoint {
 
 			@Override
 			public void onFailure(Throwable caught) {
-				System.out.println("failed to update datastore");
+				messageHandler(1);
 			}
 
 			@Override
@@ -708,25 +710,6 @@ public class ParkFinder implements EntryPoint {
 				Label addFavoritesSuccess = new Label(park.getName() + " is saved to Favorites.");
 				favButtonPanel.add(addFavoritesSuccess);
 
-				/*
-				favoriteParkService.addPark(parkID, new AsyncCallback<Void>() {
-
-					@Override
-					public void onFailure(Throwable caught) {
-						Label addFavoritesFailed = new Label( "Error: Failed to Add " + park.getName() + " to Favorites");
-						favButtonPanel.add(addFavoritesFailed);
-					}
-
-					@Override
-					public void onSuccess(Void result) {
-						favouritesTabPanel.clear();
-						retrieveFavoriteParkInformation();
-						Label addFavoritesSuccess = new Label(park.getName() + " is saved to Favorites.");
-						favButtonPanel.add(addFavoritesSuccess);
-					}
-				});
-				 */
-
 				((FocusWidget) event.getSource()).setEnabled(false);
 				removeButton.setEnabled(true);
 			}
@@ -748,25 +731,6 @@ public class ParkFinder implements EntryPoint {
 				loadFavoritesTabContent();
 				Label removeFavoritesSuccess = new Label(park.getName() + " is removed from Favorites.");
 				favButtonPanel.add(removeFavoritesSuccess);
-
-				/*
-				favoriteParkService.removePark(parkID, new AsyncCallback<Void>() {
-
-					@Override
-					public void onFailure(Throwable caught) {
-						Label removeFavoritesFailed = new Label("Error: Failed to Remove " + park.getName() + " to Favorites");
-						favButtonPanel.add(removeFavoritesFailed);
-					}
-
-					@Override
-					public void onSuccess(Void result) {
-						favouritesTabPanel.clear();
-						retrieveFavoriteParkInformation();
-						Label removeFavoritesSuccess = new Label(park.getName() + " is removed from Favorites.");
-						favButtonPanel.add(removeFavoritesSuccess);
-					}
-				});
-				 */
 
 				((FocusWidget) event.getSource()).setEnabled(false);
 				favoriteButton.setEnabled(true);
@@ -873,27 +837,24 @@ public class ParkFinder implements EntryPoint {
 
 	private void messageHandler(int code) {
 		final DialogBox message = new DialogBox();
-
+		
 		switch (code) {
 		case 1:
-			message.setText("Failed to update favorite park list. Check loadParkFinder()");
+			message.setText("Failed to update favorite park list. Check updateDatastore()");
 			break;
 		case 2:
-			message.setText("Failed to get park list. Check loadParkFinder()");
+			message.setText("Failed to get park list. Check retrieveParkInformation()");
 			break;
 		case 3:
-			message.setText("Failed to get favorite park list. Check loadParkFinder()");
+			message.setText("Failed to get favorite park list. Check retrieveFavoriteParkInformation()");
 			break;
 		case 4:
 			message.setText("Failed to store park list. Check loadAdminBarContent()");
 			break;
-		case 5:
-			message.setText("Invalid Park Name or Address");
-			break;
 		default:
 			message.setText("unknown error");
 		}
-
+		
 		message.setAutoHideEnabled(true);
 		message.setPopupPosition(300, 150);
 		message.show();
