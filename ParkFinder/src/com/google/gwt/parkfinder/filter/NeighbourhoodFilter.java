@@ -1,5 +1,6 @@
 package com.google.gwt.parkfinder.filter;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,12 +17,12 @@ public class NeighbourhoodFilter implements ParkFilter {
 	public List<Park> filter(List<Park> input) {
 		List<Park> output = new LinkedList<Park>();
 		for (Park park: input){
-			for (String neighbourhood: neighbourhoods){
-				if (park.getNeighbourhoodName().equals(neighbourhood)) {
+			for (String string: neighbourhoods) {
+				if (park.getNeighbourhoodName().equals(string)) {
 					output.add(park);
 				}
 			}
-		}
+		}	
 		return output;
 	}
 }
