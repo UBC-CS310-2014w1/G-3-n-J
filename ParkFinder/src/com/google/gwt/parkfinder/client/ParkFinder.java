@@ -164,17 +164,6 @@ public class ParkFinder implements EntryPoint {
 			}
 		});
 
-
-
-		// Sequence Map (set up this way to avoid synchronization problem)
-		// retrieveParkInformation() -> loadAdminBarContent()
-		//							 -> loadSearchTabContent()
-		// retrieveFavoriteParkInformation() -> loadFavoriteTabContent()
-		//
-		//		initTabs();
-		//		retrieveParkInformation();
-		//		retrieveFavoriteParkInformation();
-		//		
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
 

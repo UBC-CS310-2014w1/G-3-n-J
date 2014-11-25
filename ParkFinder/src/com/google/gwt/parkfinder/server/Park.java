@@ -118,7 +118,7 @@ public class Park implements Serializable {
 
 	public float getLon() {
 		int pivot = GoogleMapDest.indexOf(',');
-		String lon = GoogleMapDest.substring(pivot + 1, GoogleMapDest.length());
+		String lon = GoogleMapDest.substring(pivot + 1);
 		return Float.parseFloat(lon);
 	}
 	

@@ -50,10 +50,9 @@ public class FilterPanel extends VerticalPanel {
 		FilterCheckBox playgroundCheckBox = new FilterCheckBox("Playgrounds", this, playgroundFilter);
 		this.add(playgroundCheckBox);
 
-
-		//		ParkFilter walkingDistanceFilter = new DistanceFilter((float)2.5, parkFinder.getUserLat(), parkFinder.getUserLon());
-		//		FilterCheckBox walkingDistanceCheckBox = new FilterCheckBox("Walking Distance", this, walkingDistanceFilter);
-		//		this.add(walkingDistanceCheckBox);
+//		ParkFilter walkingDistanceFilter = new DistanceFilter((float)2.5, parkFinder.getUserLat(), parkFinder.getUserLon());
+//		FilterCheckBox walkingDistanceCheckBox = new FilterCheckBox("Walking Distance", this, walkingDistanceFilter);
+//		this.add(walkingDistanceCheckBox);
 
 		this.add(neighbourhoodPanel);
 		neighbourhoodPanel.add(neighbourhoodTree);
