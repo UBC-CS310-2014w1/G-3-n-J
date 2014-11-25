@@ -2,11 +2,28 @@
 
 
 /** Example rules used by the template application (remove for your app) */
-h1 {
-  font-size: 2em;
+h2 {
   font-weight: bold;
   color: #777777;
   text-align: center;
+}
+
+#signInOut {
+	float: left;
+}
+
+#nav {
+	line-height:30px;
+    height:25px;
+    width:100px;
+    float: right;
+    padding:5px; 
+	position: relative;
+	right: 100px;
+}
+
+#pageContent {
+	clear: both;
 }
 
 #searchContainer {
@@ -21,13 +38,6 @@ h1 {
 	float: left;
 }
 
-#nav {
-    line-height:30px;
-    height:25px;
-    width:100px;
-    float:bottom;
-    padding:5px; 
-}
 
 
 /** Most GWT widgets already have a style name defined */

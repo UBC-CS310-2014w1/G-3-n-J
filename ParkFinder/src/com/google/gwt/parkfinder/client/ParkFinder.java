@@ -202,7 +202,7 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void buildMapUi() {
-		LatLng defaultCenter = LatLng.newInstance(49.240978,-123.112028);
+		LatLng defaultCenter = LatLng.newInstance(49.258105,-123.142395);
 		map = new MapWidget(defaultCenter, 12);
 
 		map.setSize("100%", "100%");
@@ -610,10 +610,13 @@ public class ParkFinder implements EntryPoint {
 		final VerticalPanel favButtonPanel = new VerticalPanel();
 
 		// Display name, picture, address, and neighbourhood
-		Image img = new Image();
-		img.setUrlAndVisibleRect(park.getParkImgUrl(), 0, 0, 333, 250);
+		if (!park.getParkImgUrl().equals("No available image.")) {
+			Image img = new Image();
+			img.setUrlAndVisibleRect(park.getParkImgUrl(), 0, 0, 333, 250);
+			allInfo.add(img);
+		}
+		
 		Label address = new Label("Address: " + park.getStreetNumber() + " " + park.getStreetName());
-		allInfo.add(img);
 		allInfo.add(address);
 
 		// Gives user directions to the park if location services enabled.
@@ -845,7 +848,7 @@ public class ParkFinder implements EntryPoint {
 					}
 
 					message.setAutoHideEnabled(true);
-					message.setPopupPosition(300, 150);
+					message.setPopupPosition(Window.getClientWidth()/2 - 175, Window.getClientHeight()/2 - 190);
 					message.show();
 				}
 			}
