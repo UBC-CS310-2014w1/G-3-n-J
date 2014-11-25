@@ -7,6 +7,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
@@ -760,13 +762,24 @@ public class ParkFinder implements EntryPoint {
 		}
 
 		if (!parkNames.isEmpty()) {
+			sortInAlphabeticalOrder(parkNames);
 			cellList.setRowData(0, parkNames);
 		}
-
 		return cellList;
-
 	}
-
+	
+	private void sortInAlphabeticalOrder(List<String> parkNames) {
+		Comparator<String> alphaSort = new Comparator<String>() {
+		    public int compare(String name1, String name2) {
+		        int parkName = String.CASE_INSENSITIVE_ORDER.compare(name1, name2);
+		        if (parkName == 0) {
+		        	parkName = name1.compareTo(name2);
+		        }
+		        return parkName;
+		    }
+		};
+		Collections.sort(parkNames, alphaSort);
+	}
 
 	private void messageHandler(int code) {
 		final DialogBox message = new DialogBox();
