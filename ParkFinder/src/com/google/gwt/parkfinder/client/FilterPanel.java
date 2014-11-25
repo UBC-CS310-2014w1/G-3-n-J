@@ -1,7 +1,8 @@
 package com.google.gwt.parkfinder.client;
 
-import java.util.ArrayList;
+
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -14,13 +15,11 @@ import com.google.gwt.parkfinder.filter.PlaygroundFilter;
 import com.google.gwt.parkfinder.filter.WashroomFilter;
 import com.google.gwt.parkfinder.server.Park;
 import com.google.gwt.user.cellview.client.CellList;
-import com.google.gwt.user.client.ui.Button;
+
 import com.google.gwt.user.client.ui.CheckBox;
-import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
+
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.TextBox;
+
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -33,7 +32,7 @@ public class FilterPanel extends VerticalPanel {
 	private Tree neighbourhoodTree = new Tree();
 	private TreeItem neighbourhoods = new TreeItem();
 	private boolean allNeighbourhoodsBool = true;
-	private List<String> checkedNeighbourhoodStrings = new LinkedList<String>();
+	private HashMap<String, String> checkedNeighbourhoodStrings = new HashMap<String, String>();
 
 
 	private ScrollPanel parkDisplay = new ScrollPanel();
@@ -51,10 +50,10 @@ public class FilterPanel extends VerticalPanel {
 		FilterCheckBox playgroundCheckBox = new FilterCheckBox("Playgrounds", this, playgroundFilter);
 		this.add(playgroundCheckBox);
 
-		
-//		ParkFilter walkingDistanceFilter = new DistanceFilter((float)2.5, parkFinder.getUserLat(), parkFinder.getUserLon());
-//		FilterCheckBox walkingDistanceCheckBox = new FilterCheckBox("Walking Distance", this, walkingDistanceFilter);
-//		this.add(walkingDistanceCheckBox);
+
+		//		ParkFilter walkingDistanceFilter = new DistanceFilter((float)2.5, parkFinder.getUserLat(), parkFinder.getUserLon());
+		//		FilterCheckBox walkingDistanceCheckBox = new FilterCheckBox("Walking Distance", this, walkingDistanceFilter);
+		//		this.add(walkingDistanceCheckBox);
 
 		this.add(neighbourhoodPanel);
 		neighbourhoodPanel.add(neighbourhoodTree);
@@ -86,11 +85,11 @@ public class FilterPanel extends VerticalPanel {
 
 		neighbourhoods.addItem(allNeighbourhoodsCheckBox);
 
-		List<String> neighbourhoodStrings = Arrays.asList("Downtown","Arbutus Ridge","Dunbar-Southlands",
+		List<String> neighbourhoodStrings = new LinkedList<String>(Arrays.asList("Downtown","Arbutus Ridge","Dunbar-Southlands",
 				"Fairview","Grandview-Woodland","Hastings-Sunrise","Kensington-Cedar Cottage",
 				"Kerrisdale","Killarney","Kitsilano","Marpole","Mount Pleasant","Oakridge","Renfrew-Collingwood",
 				"Riley-Little Mountain","Shaughnessy","South Cambie","Strathcona","Sunset","Victoria-Fraserview",
-				"West End","West Point Grey");
+				"West End","West Point Grey"));
 		for (String nbh : neighbourhoodStrings) {
 			CheckBox check = new NeighbourhoodCheckBox(nbh);
 			neighbourhoods.addItem(check);
@@ -161,15 +160,11 @@ public class FilterPanel extends VerticalPanel {
 
 					if (fcb.getValue()) {
 						fcb.setValue(true);
-						checkedNeighbourhoodStrings.add(text);
+						checkedNeighbourhoodStrings.put(text, text);
 
 					} else {
 						fcb.setValue(false);
-						for (String str: checkedNeighbourhoodStrings) {
-							if (str.equals(text))
-								checkedNeighbourhoodStrings.remove(str);
-						}
-
+						checkedNeighbourhoodStrings.remove(text);
 					}
 					if (!allNeighbourhoodsBool) {
 						ParkFilter neighbourhoodFilter = new NeighbourhoodFilter(checkedNeighbourhoodStrings);

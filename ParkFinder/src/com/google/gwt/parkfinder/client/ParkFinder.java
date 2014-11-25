@@ -170,11 +170,11 @@ public class ParkFinder implements EntryPoint {
 		// retrieveParkInformation() -> loadAdminBarContent()
 		//							 -> loadSearchTabContent()
 		// retrieveFavoriteParkInformation() -> loadFavoriteTabContent()
-//
-//		initTabs();
-//		retrieveParkInformation();
-//		retrieveFavoriteParkInformation();
-//		
+		//
+		//		initTabs();
+		//		retrieveParkInformation();
+		//		retrieveFavoriteParkInformation();
+		//		
 		RootPanel.get("mapPanel").add(mapPanel);
 		RootPanel.get("searchContainer").add(tabPanel);
 
@@ -187,7 +187,7 @@ public class ParkFinder implements EntryPoint {
 		};
 
 		t.schedule((int) (0.5*1000*60));
-		*/
+		 */
 	}
 
 	private void updateDatastore() {
@@ -229,15 +229,15 @@ public class ParkFinder implements EntryPoint {
 
 	private void initTabs() {
 		tabPanel.setWidth("100%");
-		
+
 		tabPanel.add(searchTabScrollPanel, "Search");
 		searchTabScrollPanel.setHeight(TAB_PANEL_HEIGHT);
 		searchTabScrollPanel.add(searchTabPanel);
-		
+
 		tabPanel.add(favouritesScrollPanel, "Favourites");
 		favouritesScrollPanel.setHeight(TAB_PANEL_HEIGHT);
 		favouritesScrollPanel.add(favouritesTabPanel);
-		
+
 		tabPanel.add(filterScrollPanel, "Filter");
 		filterScrollPanel.setHeight(TAB_PANEL_HEIGHT);
 		filterScrollPanel.add(filterPanel);
@@ -387,7 +387,7 @@ public class ParkFinder implements EntryPoint {
 			public void onKeyDown(KeyDownEvent event) {
 				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
 					clearOldSearch(searchTabPanel);
-					
+
 					final String symbol = field.getText();
 					field.setFocus(true);
 					field.setText("");
@@ -417,7 +417,7 @@ public class ParkFinder implements EntryPoint {
 
 	private void clearOldSearch(Panel p) {
 		map.getInfoWindow().close();
-		
+
 		if (p.equals(searchTabPanel)) {
 			while (searchTabPanel.getWidgetCount() > 2) {
 				searchTabPanel.remove(searchTabPanel.getWidgetCount() -1);
@@ -552,7 +552,7 @@ public class ParkFinder implements EntryPoint {
 			img.setUrlAndVisibleRect(park.getParkImgUrl(), 0, 0, 333, 250);
 			allInfo.add(img);
 		}
-		
+
 		Label address = new Label("Address: " + park.getStreetNumber() + " " + park.getStreetName());
 		allInfo.add(address);
 
@@ -710,7 +710,7 @@ public class ParkFinder implements EntryPoint {
 
 		return dataGrid;
 	}
-	
+
 	public List<Park> getParks() {
 		return parkList;
 	}
@@ -770,7 +770,7 @@ public class ParkFinder implements EntryPoint {
 
 	private void messageHandler(int code) {
 		final DialogBox message = new DialogBox();
-		
+
 		switch (code) {
 		case 1:
 			message.setText("Failed to update favorite park list. Check updateDatastore()");
@@ -787,7 +787,7 @@ public class ParkFinder implements EntryPoint {
 		default:
 			message.setText("unknown error");
 		}
-		
+
 		message.setAutoHideEnabled(true);
 		message.setPopupPosition(300, 150);
 		message.show();
@@ -830,15 +830,15 @@ public class ParkFinder implements EntryPoint {
 			newMapMarker(park);
 		}
 	}
-	
+
 	public void clearMap() {
 		map.clearOverlays();
 	}
-	
+
 	public float getUserLat() {
 		return (float) userLat;
 	}
-	
+
 	public float getUserLon() {
 		return (float) userLng;
 	}
