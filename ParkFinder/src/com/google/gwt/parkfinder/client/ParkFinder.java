@@ -90,6 +90,8 @@ public class ParkFinder implements EntryPoint {
 	private VerticalPanel searchTabPanel = new VerticalPanel();
 	private ScrollPanel searchTabScrollPanel = new ScrollPanel();
 	private VerticalPanel favouritesTabPanel = new VerticalPanel();
+	private ScrollPanel favouritesScrollPanel = new ScrollPanel();
+	private String TAB_PANEL_HEIGHT = Double.toString(MAP_HEIGHT - 45) + "px";
 
 	private VerticalPanel loginPanel = new VerticalPanel();
 	private LoginInfo loginInfo = null;
@@ -218,10 +220,15 @@ public class ParkFinder implements EntryPoint {
 
 	private void initTabs() {
 		tabPanel.setWidth("100%");
+		
 		tabPanel.add(searchTabScrollPanel, "Search");
-		searchTabScrollPanel.setHeight(Double.toString(MAP_HEIGHT - 45)+"px");
+		searchTabScrollPanel.setHeight(TAB_PANEL_HEIGHT);
 		searchTabScrollPanel.add(searchTabPanel);
-		tabPanel.add(favouritesTabPanel, "Favourites");
+		
+		tabPanel.add(favouritesScrollPanel, "Favourites");
+		favouritesScrollPanel.setHeight(TAB_PANEL_HEIGHT);
+		favouritesScrollPanel.add(favouritesTabPanel);
+		
 		tabPanel.add(filterPanel, "Filter");
 		tabPanel.selectTab(0);
 	}
@@ -455,6 +462,8 @@ public class ParkFinder implements EntryPoint {
 		field.addKeyDownHandler(new KeyDownHandler() {
 			public void onKeyDown(KeyDownEvent event) {
 				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+					clearOldSearch(searchTabPanel);
+					
 					final String symbol = field.getText();
 					field.setFocus(true);
 					field.setText("");
@@ -483,6 +492,8 @@ public class ParkFinder implements EntryPoint {
 	}
 
 	private void clearOldSearch(Panel p) {
+		map.getInfoWindow().close();
+		
 		if (p.equals(searchTabPanel)) {
 			while (searchTabPanel.getWidgetCount() > 2) {
 				searchTabPanel.remove(searchTabPanel.getWidgetCount() -1);
