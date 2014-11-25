@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.parkfinder.filter.DistanceFilter;
 import com.google.gwt.parkfinder.filter.NeighbourhoodFilter;
 import com.google.gwt.parkfinder.filter.ParkFilter;
 import com.google.gwt.parkfinder.filter.PlaygroundFilter;
@@ -50,19 +51,10 @@ public class FilterPanel extends VerticalPanel {
 		FilterCheckBox playgroundCheckBox = new FilterCheckBox("Playgrounds", this, playgroundFilter);
 		this.add(playgroundCheckBox);
 
-		////  TODO DISTANCE FILTER
-		//		HorizontalPanel distancePanel = new HorizontalPanel();
-		//		TextBox distanceTextField = new TextBox();
-		//		Button distanceButton = new Button("Distance", new ClickHandler() {
-		//			public void onClick(ClickEvent event) {
-		//				//map.getlatlong
-		//				// new DistanceFilter based on distance input and map coords
-		//			}
-		//		});
-		//		distancePanel.add(distanceTextField);
-		//		distancePanel.add(distanceButton);
-		//		filterPanel.add(distancePanel);
-		//		
+		
+//		ParkFilter walkingDistanceFilter = new DistanceFilter((float)2.5, parkFinder.getUserLat(), parkFinder.getUserLon());
+//		FilterCheckBox walkingDistanceCheckBox = new FilterCheckBox("Walking Distance", this, walkingDistanceFilter);
+//		this.add(walkingDistanceCheckBox);
 
 		this.add(neighbourhoodPanel);
 		neighbourhoodPanel.add(neighbourhoodTree);

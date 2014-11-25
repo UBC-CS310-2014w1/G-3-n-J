@@ -99,6 +99,7 @@ public class ParkFinder implements EntryPoint {
 	private Anchor signOutLink = new Anchor("Sign Out");
 
 	private FilterPanel filterPanel = new FilterPanel(this); 
+	private ScrollPanel filterScrollPanel = new ScrollPanel();
 
 	private List<Park> parkList = new ArrayList<Park>();
 	private List<String> favoriteParkList = new ArrayList<String>();
@@ -237,7 +238,9 @@ public class ParkFinder implements EntryPoint {
 		favouritesScrollPanel.setHeight(TAB_PANEL_HEIGHT);
 		favouritesScrollPanel.add(favouritesTabPanel);
 		
-		tabPanel.add(filterPanel, "Filter");
+		tabPanel.add(filterScrollPanel, "Filter");
+		filterScrollPanel.setHeight(TAB_PANEL_HEIGHT);
+		filterScrollPanel.add(filterPanel);
 		tabPanel.selectTab(0);
 	}
 
@@ -830,6 +833,14 @@ public class ParkFinder implements EntryPoint {
 	
 	public void clearMap() {
 		map.clearOverlays();
+	}
+	
+	public float getUserLat() {
+		return (float) userLat;
+	}
+	
+	public float getUserLon() {
+		return (float) userLng;
 	}
 
 	private void showParkMarkerPopup(Park park) {
