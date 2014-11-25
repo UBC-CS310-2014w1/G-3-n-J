@@ -26,13 +26,13 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class FilterPanel extends VerticalPanel {
 
-	private List<ParkFilter> filters = new ArrayList<ParkFilter>();
+	private List<ParkFilter> filters = new LinkedList<ParkFilter>();
 	private ParkFinder parkFinder;
 	private VerticalPanel neighbourhoodPanel = new VerticalPanel();
 	private Tree neighbourhoodTree = new Tree();
 	private TreeItem neighbourhoods = new TreeItem();
 	private boolean allNeighbourhoodsBool = true;
-	private List<String> checkedNeighbourhoodStrings = new ArrayList<String>();
+	private List<String> checkedNeighbourhoodStrings = new LinkedList<String>();
 
 
 	private ScrollPanel parkDisplay = new ScrollPanel();
@@ -75,6 +75,7 @@ public class FilterPanel extends VerticalPanel {
 			public void onClick(ClickEvent event) {
 				if (allNeighbourhoodsCheckBox.getValue()) {
 					allNeighbourhoodsCheckBox.setValue(true);
+					allNeighbourhoodsBool = true;
 					for (ParkFilter f: filters){
 						if (f.getClass() == NeighbourhoodFilter.class){
 							filters.remove(f);
@@ -85,11 +86,12 @@ public class FilterPanel extends VerticalPanel {
 					allNeighbourhoodsCheckBox.setValue(false);
 					ParkFilter neighbourhoodFilter = new NeighbourhoodFilter(checkedNeighbourhoodStrings);
 					filters.add(neighbourhoodFilter);
+					allNeighbourhoodsBool = false;
 				}
 				refresh();
 			}
 		});
-				
+
 		neighbourhoods.addItem(allNeighbourhoodsCheckBox);
 
 		List<String> neighbourhoodStrings = Arrays.asList("Downtown","Arbutus Ridge","Dunbar-Southlands",
@@ -98,35 +100,9 @@ public class FilterPanel extends VerticalPanel {
 				"Riley-Little Mountain","Shaughnessy","South Cambie","Strathcona","Sunset","Victoria-Fraserview",
 				"West End","West Point Grey");
 		for (String nbh : neighbourhoodStrings) {
-			CheckBox check = new NeighbourhoodCheckBox(nbh); // hook up each button
+			CheckBox check = new NeighbourhoodCheckBox(nbh);
 			neighbourhoods.addItem(check);
 		}
-		//
-		//		Button searchNeighbourhoodBtn = new Button("Search", new ClickHandler() {
-		//			@Override
-		//			public void onClick(ClickEvent event) {
-		//				for (ParkFilter f: filters){
-		//					if (f.getClass() == NeighbourhoodFilter.class){
-		//						filters.remove(f);
-		//						refresh();
-		//						break;
-		//					}
-		//				}
-		//				int numNeighbourhoods = neighbourhoods.getChildCount();
-		//				List<String> checkedNeighbourhoodStrings = new ArrayList<String>();
-		//				if (!allNeighbourhoodsCheckBox.getValue()){
-		//					for (int i = 1; i < numNeighbourhoods; i++) {
-		//						CheckBox box = (CheckBox) neighbourhoods.getChild(i).getWidget();
-		//						if (box.getValue())
-		//							checkedNeighbourhoodStrings.add(neighbourhoods.getChild(i).getText());
-		//					}
-		//					ParkFilter neighbourhoodFilter = new NeighbourhoodFilter(checkedNeighbourhoodStrings);
-		//				}
-		//				refresh();
-		//			}
-		//		});
-
-		//neighbourhoodPanel.add(searchNeighbourhoodBtn);
 
 		this.add(neighbourhoodPanel);
 
@@ -185,27 +161,28 @@ public class FilterPanel extends VerticalPanel {
 			final CheckBox fcb = this;
 			this.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
+					for (ParkFilter f: filters){
+						if (f.getClass() == NeighbourhoodFilter.class){
+							filters.remove(f);
+						}
+					}
+
+					if (fcb.getValue()) {
+						fcb.setValue(true);
+						checkedNeighbourhoodStrings.add(text);
+
+					} else {
+						fcb.setValue(false);
+						for (String str: checkedNeighbourhoodStrings) {
+							if (str.equals(text))
+								checkedNeighbourhoodStrings.remove(str);
+						}
+
+					}
 					if (!allNeighbourhoodsBool) {
-						for (ParkFilter f: filters){
-							if (f.getClass() == NeighbourhoodFilter.class){
-								filters.remove(f);
-							}
-						}
-						if (fcb.getValue()) {
-							fcb.setValue(true);
-							checkedNeighbourhoodStrings.add(text);
-						} else {
-							fcb.setValue(false);
-							checkedNeighbourhoodStrings.remove(text);
-						}
 						ParkFilter neighbourhoodFilter = new NeighbourhoodFilter(checkedNeighbourhoodStrings);
 						filters.add(neighbourhoodFilter);
 						refresh();
-						//					} else {
-						//						if (fcb.getValue()) {
-						//							uncheckAll();
-						//							onClick(event);
-						//						}
 					}
 				}
 			});
