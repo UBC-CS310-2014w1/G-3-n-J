@@ -8,18 +8,27 @@ import java.util.List;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.parkfinder.filter.BaseballFilter;
+import com.google.gwt.parkfinder.filter.BasketballFilter;
+import com.google.gwt.parkfinder.filter.BeachFilter;
+import com.google.gwt.parkfinder.filter.CommunityFilter;
 import com.google.gwt.parkfinder.filter.DistanceFilter;
+import com.google.gwt.parkfinder.filter.DogFilter;
+import com.google.gwt.parkfinder.filter.FoodFilter;
 import com.google.gwt.parkfinder.filter.NeighbourhoodFilter;
 import com.google.gwt.parkfinder.filter.ParkFilter;
+import com.google.gwt.parkfinder.filter.PicnicFilter;
 import com.google.gwt.parkfinder.filter.PlaygroundFilter;
+import com.google.gwt.parkfinder.filter.SkateboardFilter;
+import com.google.gwt.parkfinder.filter.SoccerFilter;
+import com.google.gwt.parkfinder.filter.SprayParkFilter;
+import com.google.gwt.parkfinder.filter.TennisFilter;
+import com.google.gwt.parkfinder.filter.TrailFilter;
 import com.google.gwt.parkfinder.filter.WashroomFilter;
 import com.google.gwt.parkfinder.server.Park;
 import com.google.gwt.user.cellview.client.CellList;
-
 import com.google.gwt.user.client.ui.CheckBox;
-
 import com.google.gwt.user.client.ui.ScrollPanel;
-
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -49,6 +58,54 @@ public class FilterPanel extends VerticalPanel {
 		ParkFilter playgroundFilter = new PlaygroundFilter();
 		FilterCheckBox playgroundCheckBox = new FilterCheckBox("Playgrounds", this, playgroundFilter);
 		this.add(playgroundCheckBox);
+		
+		ParkFilter tennisFilter = new TennisFilter();
+		FilterCheckBox tennisCheckBox = new FilterCheckBox("Tennis Courts", this, tennisFilter);
+		this.add(tennisCheckBox);
+		
+		ParkFilter baseballFilter = new BaseballFilter();
+		FilterCheckBox baseballCheckBox = new FilterCheckBox("Baseball/Softball Diamonds", this, baseballFilter);
+		this.add(baseballCheckBox);
+		
+		ParkFilter basketballFilter = new BasketballFilter();
+		FilterCheckBox basketballCheckBox = new FilterCheckBox("Basketball Courts", this, basketballFilter);
+		this.add(basketballCheckBox);
+		
+		ParkFilter beachFilter = new BeachFilter();
+		FilterCheckBox beachCheckBox = new FilterCheckBox("Beaches", this, beachFilter);
+		this.add(beachCheckBox);
+		
+		ParkFilter dogFilter = new DogFilter();
+		FilterCheckBox dogCheckBox = new FilterCheckBox("Off Leash Dog Areas", this, dogFilter);
+		this.add(dogCheckBox);
+		
+		ParkFilter skateFilter = new SkateboardFilter();
+		FilterCheckBox skateCheckBox = new FilterCheckBox("Skateboard Parks", this, skateFilter);
+		this.add(skateCheckBox);
+
+		ParkFilter soccerFilter = new SoccerFilter();
+		FilterCheckBox soccerCheckBox = new FilterCheckBox("Soccer Fields", this, soccerFilter);
+		this.add(soccerCheckBox);
+
+		ParkFilter sprayFilter = new SprayParkFilter();
+		FilterCheckBox sprayCheckBox = new FilterCheckBox("Water/Spray Parks", this, sprayFilter);
+		this.add(sprayCheckBox);
+		
+		ParkFilter trailFilter = new TrailFilter();
+		FilterCheckBox trailCheckBox = new FilterCheckBox("Jogging Trails", this, trailFilter);
+		this.add(trailCheckBox);
+		
+		ParkFilter foodFilter = new FoodFilter();
+		FilterCheckBox foodCheckBox = new FilterCheckBox("Food Available", this, foodFilter);
+		this.add(foodCheckBox);
+
+		ParkFilter picnicFilter = new PicnicFilter();
+		FilterCheckBox picnicCheckBox = new FilterCheckBox("Picnic Sites", this, picnicFilter);
+		this.add(picnicCheckBox);
+		
+		ParkFilter communityFilter = new CommunityFilter();
+		FilterCheckBox communityCheckBox = new FilterCheckBox("Community Centre", this, communityFilter);
+		this.add(communityCheckBox);
 
 //		ParkFilter walkingDistanceFilter = new DistanceFilter((float)2.5, parkFinder.getUserLat(), parkFinder.getUserLon());
 //		FilterCheckBox walkingDistanceCheckBox = new FilterCheckBox("Walking Distance", this, walkingDistanceFilter);
