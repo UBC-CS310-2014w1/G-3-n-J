@@ -5,14 +5,17 @@ import static com.google.gwt.dom.client.BrowserEvents.MOUSEOVER;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.Collection;
 import java.util.List;
+import java.util.TreeMap;
 
 import com.google.gwt.maps.client.InfoWindowContent;
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.Maps;
 import com.google.gwt.maps.client.control.LargeMapControl;
 import com.google.gwt.maps.client.event.MarkerClickHandler;
+import com.google.gwt.maps.client.geocode.Geocoder;
+import com.google.gwt.maps.client.geocode.LatLngCallback;
 import com.google.gwt.maps.client.geom.LatLng;
 import com.google.gwt.maps.client.overlay.Marker;
 import com.google.gwt.parkfinder.client.LoginInfo;
@@ -24,6 +27,7 @@ import com.google.gwt.parkfinder.client.ParkServiceAsync;
 import com.google.gwt.parkfinder.client.FavoriteParkService;
 import com.google.gwt.parkfinder.client.FavoriteParkServiceAsync;
 import com.google.gwt.parkfinder.server.Park;
+import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.cell.client.ClickableTextCell;
@@ -38,6 +42,7 @@ import com.google.gwt.geolocation.client.Geolocation;
 import com.google.gwt.geolocation.client.Position;
 import com.google.gwt.geolocation.client.Position.Coordinates;
 import com.google.gwt.geolocation.client.PositionError;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -248,6 +253,7 @@ public class ParkFinder implements EntryPoint {
 
 		search.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
+				clearOldSearch(searchTabPanel);
 
 				final String symbol = field.getText();
 				field.setFocus(true);
@@ -276,6 +282,16 @@ public class ParkFinder implements EntryPoint {
 			}
 		});
 	}
+	
+	private void clearOldSearch(Panel p) {
+		if (p.equals(searchTabPanel)) {
+			while (searchTabPanel.getWidgetCount() > 2) {
+				searchTabPanel.remove(searchTabPanel.getWidgetCount() -1);
+			}
+		}
+
+		map.clearOverlays();
+	}
 
 	private void searchByName(String symbol) {
 		List<Park> nameMatched = new ArrayList<Park>();
@@ -283,11 +299,6 @@ public class ParkFinder implements EntryPoint {
 			if (park.getName().toLowerCase().contains(symbol.toLowerCase())) {
 				nameMatched.add(park);
 			}
-		}
-
-		if (searchTabPanel.getWidgetCount() > 2) {
-			// Clears previous search results
-			searchTabPanel.remove(2);
 		}
 
 		if (nameMatched.isEmpty()) {
@@ -304,37 +315,72 @@ public class ParkFinder implements EntryPoint {
 
 		List<Park> addressMatched = new ArrayList<Park>();
 		for (Park park : parkList) {
-			if (park.getStreetName().toLowerCase()
-					.contains(street.toLowerCase())) {
+			if (park.getStreetName().toLowerCase().contains(street.toLowerCase())) {
 				addressMatched.add(park);
 			}
 		}
 
-		if (searchTabPanel.getWidgetCount() > 2) {
-			// Clears previous search results
-			searchTabPanel.remove(2);
+		int j = 0;
+		List<Park> singleMatch = new ArrayList<Park>();
+		while (singleMatch.isEmpty() && j < addressMatched.size()) {
+			if (house.equals(addressMatched.get(j).getStreetNumber())) {
+				singleMatch.add(addressMatched.get(j));
+				searchTabPanel.add(parkCellList(singleMatch));
+			} else
+				j++;
 		}
 
-		if (addressMatched.isEmpty()) {
-			Label noMatchingPark = new Label("There are no park with that address.");
-			searchTabPanel.add(noMatchingPark);
-		} else {
-			int j = 0;
-			List<Park> singleMatch = new ArrayList<Park>();
-			while (singleMatch.isEmpty() && j < addressMatched.size()) {
-				if (house.equals(addressMatched.get(j).getStreetNumber())) {
-					singleMatch.add(addressMatched.get(j));
-					searchTabPanel.add(parkCellList(singleMatch));
-				} else
-					j++;
-			}
-			if (singleMatch.isEmpty()) {
-				Label zeroExactMatch = new Label("No park has the given address. Did you mean:");
-				searchTabPanel.add(zeroExactMatch);
-				searchTabPanel.add(parkCellList(addressMatched));
-			}
-		}
+		if (singleMatch.isEmpty()) 
+			findNearbyParks(symbol);
+
 	}
+
+	private void findNearbyParks(String address) {
+		final TreeMap<Double, Park> nearbyParks = new TreeMap<Double, Park>();
+		
+		Geocoder geocoder = new Geocoder();
+		geocoder.getLatLng(address, new LatLngCallback() {
+
+			@Override
+			public void onFailure() {
+				Label error = new Label("Invalid address. Please try again.");
+				searchTabPanel.add(error);
+			}
+
+			@Override
+			public void onSuccess(final LatLng point) {
+
+				for (Park park : parkList) {
+					LatLng loc = LatLng.newInstance(park.getLat(), park.getLon());
+					double dist = loc.distanceFrom(point);
+					if (nearbyParks.size() > 10) {
+						// Greater than 10 closest parks
+						if (dist < nearbyParks.lastKey()) {
+							nearbyParks.remove(nearbyParks.lastKey());
+							nearbyParks.put(dist, park);
+						}
+					} else {
+						// if less than 10 parks in map
+						nearbyParks.put(dist, park);
+					}
+				}
+				
+				Collection<Park> parks = nearbyParks.values();
+				ArrayList<Park> closestParks = new ArrayList<Park>();
+				for (Park p : parks) {
+					closestParks.add(p);
+				}
+				
+				Label info = new Label("There is no park in Vancouver with that address. Here are the closest parks to the given address.");
+				// TODO: Add map markers to search results
+				searchTabPanel.add(info);
+				searchTabPanel.add(parkCellList(closestParks));
+			}
+		});
+	}
+	
+	
+	
 
 	private void loadFavoritesTabContent() {
 		retrieveFavoriteParkInformation();
@@ -363,10 +409,20 @@ public class ParkFinder implements EntryPoint {
 		Image img = new Image();
 		img.setUrlAndVisibleRect(park.getParkImgUrl(), 0, 0, 333, 250);
 		Label address = new Label("Address: " + park.getStreetNumber() + " " + park.getStreetName());
-		Label neighbourhood = new Label("Neighbourhood: " + park.getNeighbourhoodName());
-
 		allInfo.add(img);
 		allInfo.add(address);
+		
+		// Gives user directions to the park if location services enabled.
+		if (userLat != 0 && userLng != 0) {
+			Anchor directions = new Anchor("Get Directions to " + park.getName());
+			directions.setTarget("_blank");
+			directions.setHref("https://maps.google.com?saddr=" + Double.toString(userLat) + ","
+					+ Double.toString(userLng) + "&daddr=" + Float.toString(park.getLat()) + "," +
+					Float.toString(park.getLon()));
+			allInfo.add(directions);
+		}
+		
+		Label neighbourhood = new Label("Neighbourhood: " + park.getNeighbourhoodName());
 		allInfo.add(neighbourhood);
 
 		// Display facilities.
@@ -484,7 +540,7 @@ public class ParkFinder implements EntryPoint {
 		if (enableAdd) {
 			favoriteButton.setEnabled(true);
 			removeButton.setEnabled(false);			
-		}else {
+		} else {
 			favoriteButton.setEnabled(false);
 			removeButton.setEnabled(true);
 		}
@@ -528,10 +584,9 @@ public class ParkFinder implements EntryPoint {
 			public void onBrowserEvent(Context context, Element parent, final String value, NativeEvent event, ValueUpdater<String> valueUpdater) {
 				super.onBrowserEvent(context, parent, value, event, valueUpdater);
 
-				// 				Commented out, because exception was being thrown at this line.
-				//				if (MOUSEOVER.equals(event.getType())) {
-				//					// TODO: change color when mouseover
-				//				}
+				if (MOUSEOVER.equals(event.getType())) {
+					// TODO: change color when mouseover
+				}
 
 
 				if (CLICK.equals(event.getType())) {
@@ -565,6 +620,9 @@ public class ParkFinder implements EntryPoint {
 
 		cellList.setRowData(0, parkNames);
 		return cellList;
+		
+		
+
 	}
 
 	private synchronized void retrieveParkInformation() {
@@ -675,4 +733,5 @@ public class ParkFinder implements EntryPoint {
 			Window.Location.replace(loginInfo.getLogoutUrl());
 		}
 	}
+	
 }
