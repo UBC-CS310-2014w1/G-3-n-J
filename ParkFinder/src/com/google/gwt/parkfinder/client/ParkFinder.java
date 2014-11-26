@@ -705,8 +705,7 @@ public class ParkFinder implements EntryPoint {
 	public List<Park> getParks() {
 		return parkList;
 	}
-
-
+	
 	CellList<String> parkCellList(final List<Park> parks) {
 		final Cell<String> buttonCell = new ClickableTextCell() {
 
@@ -715,7 +714,7 @@ public class ParkFinder implements EntryPoint {
 				super.onBrowserEvent(context, parent, value, event, valueUpdater);
 
 				if (MOUSEOVER.equals(event.getType())) {
-					// TODO Change color or highlight the text & background when mouse-over. 
+					// Change color or highlight the text & background when mouse-over. 
 					// setStyleName("highlight"); // create "highlight" in CSS
 				}
 
@@ -723,12 +722,22 @@ public class ParkFinder implements EntryPoint {
 				if (CLICK.equals(event.getType())) {
 					final DialogBox message = new DialogBox();
 					final ScrollPanel msgPanel = new ScrollPanel();
-					msgPanel.setSize("350px", "375px");
-
+					msgPanel.setSize("350px", "440px");
 					message.add(msgPanel);
 
+					// TODO marked for easy navigation
 					for (Park park : parks) {
-						if (value.equals(park.getName())) {
+						int i = 0;
+						
+						//while (((i + 1) < value.length()) && !(value.charAt(i) == ' ' && value.charAt(i+1) == ' ')) {
+						//while ((i < value.length()) && !(value.charAt(i) <= '0' && value.charAt(i) <= '9')) {
+						
+						while ((i < value.length()) && !(value.charAt(i) == '@')) {
+							i++;
+						}						
+						
+						String name = value.substring(0, i - 1);
+						if (name.toLowerCase().equals(park.getName().toLowerCase())) {
 							message.setText(park.getName());
 							buildParkPage(park, msgPanel);
 							showParkMarkerPopup(park);
@@ -746,11 +755,31 @@ public class ParkFinder implements EntryPoint {
 
 		List<String> parkNames = new ArrayList<String>();
 
+		// TODO  marked for easy navigation
 		for (Park park : parks) {
-			parkNames.add(park.getName());
+			
+			/**
+			int length = park.getName().length() + park.getStreetNumber().length() + park.getStreetName().length();
+			
+			String str = park.getName() + " ";
+			
+			int i = 0;
+			for (i = 0; i < (50 - length); i++) {
+				str += " ";
+			}
+			
+			str += " " + park.getStreetNumber() + " " + park.getStreetName();
+			
+			System.out.println(str);
+			parkNames.add(str);
+			*/
+			
+			//parkNames.add(park.getName());
+			
+			parkNames.add(park.getName().toUpperCase() + " @ " + park.getStreetNumber() + " " + park.getStreetName());
 		}
 
-		if (!parkNames.isEmpty()) {
+		if (!parkNames.isEmpty()) {			
 			sortInAlphabeticalOrder(parkNames);
 			cellList.setRowData(0, parkNames);
 		}
