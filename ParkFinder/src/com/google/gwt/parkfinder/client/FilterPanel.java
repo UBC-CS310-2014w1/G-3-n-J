@@ -40,6 +40,7 @@ public class FilterPanel extends VerticalPanel {
 	private VerticalPanel neighbourhoodPanel = new VerticalPanel();
 	private Tree neighbourhoodTree = new Tree();
 	private TreeItem neighbourhoods = new TreeItem();
+	private CheckBox allNeighbourhoodsCheckBox = new CheckBox("All");
 	private boolean allNeighbourhoodsBool = true;
 	private HashMap<String, String> checkedNeighbourhoodStrings = new HashMap<String, String>();
 
@@ -116,7 +117,7 @@ public class FilterPanel extends VerticalPanel {
 		neighbourhoodTree.addItem(neighbourhoods);
 		neighbourhoods.setText("Neighbourhoods");
 
-		final CheckBox allNeighbourhoodsCheckBox = new CheckBox("All");
+
 		allNeighbourhoodsCheckBox.setValue(true);
 		allNeighbourhoodsCheckBox.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
@@ -217,7 +218,8 @@ public class FilterPanel extends VerticalPanel {
 					if (fcb.getValue()) {
 						fcb.setValue(true);
 						checkedNeighbourhoodStrings.put(text, text);
-
+						allNeighbourhoodsBool = false;
+						allNeighbourhoodsCheckBox.setValue(false);
 					} else {
 						fcb.setValue(false);
 						checkedNeighbourhoodStrings.remove(text);
