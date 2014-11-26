@@ -21,7 +21,9 @@ import com.google.gwt.maps.client.event.MarkerClickHandler;
 import com.google.gwt.maps.client.geocode.Geocoder;
 import com.google.gwt.maps.client.geocode.LatLngCallback;
 import com.google.gwt.maps.client.geom.LatLng;
+import com.google.gwt.maps.client.overlay.Icon;
 import com.google.gwt.maps.client.overlay.Marker;
+import com.google.gwt.maps.client.overlay.MarkerOptions;
 import com.google.gwt.parkfinder.client.LoginInfo;
 import com.google.gwt.parkfinder.client.NotLoggedInException;
 import com.google.gwt.parkfinder.client.LoginService;
@@ -86,6 +88,8 @@ public class ParkFinder implements EntryPoint {
 	private double userLng = 0;
 	private double MAP_HEIGHT = Window.getClientHeight() - 100;
 	public MapWidget map;
+	private Icon mapIcon = Icon.newInstance("https://b1b2aa6e3251c78b81ba32fdfe00b1dbde513407.googledrive.com/host/0B4OMvdCofBIAWHp4ZGlwdmRTUmc/urbanpark.png");
+	private MarkerOptions markerOpts = MarkerOptions.newInstance(mapIcon);
 
 	private TabPanel tabPanel = new TabPanel();
 	private VerticalPanel searchTabPanel = new VerticalPanel();
@@ -846,7 +850,7 @@ public class ParkFinder implements EntryPoint {
 
 	private void newMapMarker(final Park park) {
 		final LatLng markerLocation = LatLng.newInstance(park.getLat(), park.getLon());
-		Marker marker = new Marker(markerLocation);
+		Marker marker = new Marker(markerLocation, markerOpts);
 		marker.addMarkerClickHandler(new MarkerClickHandler() {
 			@Override
 			public void onClick(MarkerClickEvent event) {
