@@ -45,27 +45,22 @@ public class FavoriteParkServiceImpl extends RemoteServiceServlet implements Fav
 	}
 
 	@Override
-	public void updateParks(List<String> parkIDs){
+	public void updateParks(List<String> parkIDs) {
 		PersistenceManager pm = getPersistenceManager();
-		
+
 		try {
 			Query q = pm.newQuery(FavoritePark.class, "User == u");
 			q.declareParameters("com.google.appengine.api.users.User u");
 			List<FavoritePark> favoriteParks = (List<FavoritePark>) q.execute(getUser());
-			
-			for (FavoritePark favoritePark : favoriteParks)
-				pm.deletePersistent(favoritePark);
-			
-		} finally {
-			pm.close();
-		}
-		updateParksHelper(parkIDs);
-	}
 
-	public void updateParksHelper(List<String> parkIDs) {
-		PersistenceManager pm = getPersistenceManager();
-		try {
-			pm.makePersistent(new FavoritePark(getUser(), parkIDs));
+			FavoritePark newFav = new FavoritePark(getUser(), parkIDs);
+
+			if (favoriteParks.size() != 0) {
+				Long id = favoriteParks.get(0).getId();
+				newFav.setId(id);
+			}
+
+			pm.makePersistent(newFav);
 		} finally {
 			pm.close();
 		}

@@ -27,12 +27,20 @@ public class FavoritePark implements Serializable {
 		this.Parks = parks;
 	}
 
+	public Long getId() {
+		return id;
+	}
+
 	public User getUser() {
 		return User;
 	}
 
 	public List<String> getParks() {
 		return Parks;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public void setUser(User user) {

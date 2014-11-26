@@ -164,7 +164,7 @@ public class FilterPanel extends VerticalPanel {
 		List<Park> freshParks = filter(parkFinder.getParks());
 		parkFinder.clearMap();
 		parkDisplay.clear();
-		parkCellList = parkFinder.parkCellList(freshParks);
+		parkCellList = parkFinder.parkCellList(freshParks, true);
 		parkDisplay.add(parkCellList);		
 		parkFinder.newMapMarker(freshParks);
 	}

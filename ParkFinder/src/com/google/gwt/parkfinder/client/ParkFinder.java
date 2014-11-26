@@ -228,15 +228,15 @@ public class ParkFinder implements EntryPoint {
 		tabPanel.add(searchTabScrollPanel, "Search");
 		searchTabScrollPanel.setHeight(TAB_PANEL_HEIGHT);
 		searchTabScrollPanel.add(searchTabPanel);
-
-		tabPanel.add(favouritesScrollPanel, "Favourites");
-		favouritesScrollPanel.setHeight(TAB_PANEL_HEIGHT);
-		favouritesScrollPanel.add(favouritesTabPanel);
-
+		
 		tabPanel.add(filterScrollPanel, "Filter");
 		filterScrollPanel.setHeight(TAB_PANEL_HEIGHT);
 		filterScrollPanel.add(filterPanel);
 		tabPanel.selectTab(0);
+
+		tabPanel.add(favouritesScrollPanel, "Favourites");
+		favouritesScrollPanel.setHeight(TAB_PANEL_HEIGHT);
+		favouritesScrollPanel.add(favouritesTabPanel);
 	}
 
 	private void retrieveParkInformation() {
@@ -437,7 +437,7 @@ public class ParkFinder implements EntryPoint {
 			searchTabPanel.add(noMatchingPark);
 		} else {
 			newMapMarker(nameMatched);
-			searchTabPanel.add(parkCellList(nameMatched));
+			searchTabPanel.add(parkCellList(nameMatched, true));
 		}
 	}
 
@@ -457,7 +457,7 @@ public class ParkFinder implements EntryPoint {
 		while (singleMatch.isEmpty() && j < addressMatched.size()) {
 			if (house.equals(addressMatched.get(j).getStreetNumber())) {
 				singleMatch.add(addressMatched.get(j));
-				searchTabPanel.add(parkCellList(singleMatch));
+				searchTabPanel.add(parkCellList(singleMatch, false));
 			} else
 				j++;
 		}
@@ -506,7 +506,7 @@ public class ParkFinder implements EntryPoint {
 				Label info = new Label("There is no park in Vancouver with that address. Here are the closest parks to the given address.");
 				newMapMarker(closestParks);
 				searchTabPanel.add(info);
-				searchTabPanel.add(parkCellList(closestParks));
+				searchTabPanel.add(parkCellList(closestParks, false));
 			}
 		});
 	}
@@ -533,7 +533,7 @@ public class ParkFinder implements EntryPoint {
 					}
 				}
 			}
-			favouritesTabPanel.add(parkCellList(favoriteParks));
+			favouritesTabPanel.add(parkCellList(favoriteParks, true));
 		}
 	}
 
@@ -710,7 +710,7 @@ public class ParkFinder implements EntryPoint {
 		return parkList;
 	}
 	
-	CellList<String> parkCellList(final List<Park> parks) {
+	CellList<String> parkCellList(final List<Park> parks, boolean sort) {
 		final Cell<String> buttonCell = new ClickableTextCell() {
 
 			@Override
@@ -783,8 +783,10 @@ public class ParkFinder implements EntryPoint {
 			parkNames.add(park.getName().toUpperCase() + " @ " + park.getStreetNumber() + " " + park.getStreetName());
 		}
 
-		if (!parkNames.isEmpty()) {			
-			sortInAlphabeticalOrder(parkNames);
+		if (!parkNames.isEmpty()) {	
+			if (sort) {
+				sortInAlphabeticalOrder(parkNames);
+			}
 			cellList.setRowData(0, parkNames);
 		}
 		return cellList;
