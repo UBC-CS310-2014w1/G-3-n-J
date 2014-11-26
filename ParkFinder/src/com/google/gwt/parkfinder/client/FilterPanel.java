@@ -43,6 +43,7 @@ public class FilterPanel extends VerticalPanel {
 	private CheckBox allNeighbourhoodsCheckBox = new CheckBox("All");
 	private boolean allNeighbourhoodsBool = true;
 	private HashMap<String, String> checkedNeighbourhoodStrings = new HashMap<String, String>();
+	private List<NeighbourhoodCheckBox> checkedNeighbourhoodBoxes = new LinkedList<NeighbourhoodCheckBox>();
 
 
 	private ScrollPanel parkDisplay = new ScrollPanel();
@@ -127,6 +128,11 @@ public class FilterPanel extends VerticalPanel {
 					for (ParkFilter f: filters){
 						if (f.getClass() == NeighbourhoodFilter.class){
 							filters.remove(f);
+							//uncheck all individual neighbouhood boxes
+							checkedNeighbourhoodStrings = new HashMap<String, String>();
+							for (NeighbourhoodCheckBox box: checkedNeighbourhoodBoxes){
+								box.setValue(false);
+							}
 							break;
 						}
 					}
@@ -206,6 +212,7 @@ public class FilterPanel extends VerticalPanel {
 	private class NeighbourhoodCheckBox extends CheckBox {
 		private NeighbourhoodCheckBox(final String text){
 			super(text);
+			checkedNeighbourhoodBoxes.add(this);
 			final CheckBox fcb = this;
 			this.addClickHandler(new ClickHandler() {
 				public void onClick(ClickEvent event) {
